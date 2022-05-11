@@ -1,0 +1,18 @@
+{
+    "name": "ml-basic",
+    "version": "0.0.1",
+    "description": "",
+    "license": "GPL-3.0",
+    "author": "InfinityFX <contact@infinity-fx.com> (https://infinity-fx.com)",
+    "main": "src/main.js",
+    "repository": "infinityfx-llc/ml-basic",
+    "homepage": "https://github.com/infinityfx-llc/ml-basic#readme",
+    "funding": "https://ko-fi.com/infinityfx",
+    "keywords": [
+        "machine learning",
+        "neural",
+        "network",
+        "ai",
+        "classifier"
+    ]
+}
