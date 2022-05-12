@@ -1,6 +1,6 @@
-import Activator from './activator';
+const Activator = require('./activator');
 
-export default class Sigmoid extends Activator {
+module.exports = class Sigmoid extends Activator {
 
     static name = 'sigmoid';
 
@@ -12,4 +12,4 @@ export default class Sigmoid extends Activator {
         return n * (1 - n);
     }
 
-}
+};

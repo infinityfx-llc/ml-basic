@@ -1,6 +1,6 @@
-import Activator from './activator';
+const Activator = require('./activator');
 
-export default class Softplus extends Activator {
+module.exports = class Softplus extends Activator {
 
     static name = 'softplus';
 
@@ -12,4 +12,4 @@ export default class Softplus extends Activator {
         return 1 / (1 + Math.exp(-n));
     }
 
-}
+};

@@ -1,8 +1,8 @@
-import IllegalArgumentException from '../exceptions/illegal-argument';
-import Optimizer from './optimizer';
-import Matrix from '../math/matrix';
+const IllegalArgumentException = require('../exceptions/illegal-argument');
+const Optimizer = require('./optimizer');
+const Matrix = require('../math/matrix');
 
-export default class BatchGradientDescent extends Optimizer {
+module.exports = class BatchGradientDescent extends Optimizer {
 
     static name = 'batch_gradient_descent';
 
@@ -37,4 +37,4 @@ export default class BatchGradientDescent extends Optimizer {
         return super.deserialize(data, new BatchGradientDescent());
     }
 
-}
+};

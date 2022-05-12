@@ -1,6 +1,6 @@
-import Activator from './activator';
+const Activator = require('./activator');
 
-export default class Elu extends Activator {
+module.exports = class Elu extends Activator {
 
     static name = 'elu';
     static alpha = 1;
@@ -13,4 +13,4 @@ export default class Elu extends Activator {
         return n < 0 ? Elu.alpha * Math.exp(n) : 1;
     }
 
-}
+};

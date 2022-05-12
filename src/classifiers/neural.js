@@ -1,17 +1,17 @@
-import IllegalArgumentException from '../exceptions/illegal-argument';
-import Loss from '../functions/loss';
-import SquaredLoss from '../functions/squared-loss';
-import Layer from '../layer';
-import Matrix from '../math/matrix';
-import BatchGradientDescent from '../optimizers/batch-gradient-descent';
-import { TYPES } from '../types';
-import { pad, range, shuffle } from '../utils';
-import Classifier from './classifier';
+const IllegalArgumentException = require('../exceptions/illegal-argument');
+const Loss = require('../functions/loss');
+const SquaredLoss = require('../functions/squared-loss');
+const Layer = require('../layer');
+const Matrix = require('../math/matrix');
+const BatchGradientDescent = require('../optimizers/batch-gradient-descent');
+const { TYPES } = require('../types');
+const { pad, range, shuffle } = require('../utils');
+const Classifier = require('./classifier');
 
 //implement labeled data
 //implement binary selection
 
-export default class NeuralFX extends Classifier {
+module.exports = class NeuralFX extends Classifier {
 
     static name = 'neural';
 
@@ -114,4 +114,4 @@ export default class NeuralFX extends Classifier {
 		}, '\t');
     }
 
-}
+};

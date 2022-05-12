@@ -1,6 +1,6 @@
-import Exception from '../exceptions/exception';
+const Exception = require('../exceptions/exception');
 
-export default class Activator {
+module.exports = class Activator {
 
     static name = 'identity';
 
@@ -20,4 +20,4 @@ export default class Activator {
         return this.name;
     }
 
-}
+};

@@ -1,7 +1,7 @@
-import IllegalArgumentException from '../exceptions/illegal-argument';
-import Matrix from '../math/matrix';
+const IllegalArgumentException = require('../exceptions/illegal-argument');
+const Matrix = require('../math/matrix');
 
-export default class Optimizer {
+module.exports = class Optimizer {
 
     static name = 'gradient_descent';
 
@@ -49,4 +49,4 @@ export default class Optimizer {
         return optimizer;
     }
 
-}
+};

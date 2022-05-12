@@ -1,6 +1,6 @@
-import Activator from './activator';
+const Activator = require('./activator');
 
-export default class ParametricRelu extends Activator {
+module.exports = class ParametricRelu extends Activator {
 
     static name = 'parametric_relu';
     static alpha = 0.01;
@@ -13,4 +13,4 @@ export default class ParametricRelu extends Activator {
         return n < 0 ? ParametricRelu.alpha : 1;
     }
 
-}
+};

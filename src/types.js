@@ -1,14 +1,14 @@
-import Sigmoid from './functions/sigmoid';
-import TanH from './functions/tanh';
-import ParametricRelu from './functions/parametric-relu';
-import Elu from './functions/elu';
-import Softplus from './functions/softplus';
-import SquaredLoss from './functions/squared-loss';
-import Optimizer from './optimizers/optimizer';
-import BatchGradientDescent from './optimizers/batch-gradient-descent';
-import Adam from './optimizers/adam';
+const Sigmoid = require('./functions/sigmoid');
+const TanH = require('./functions/tanh');
+const ParametricRelu = require('./functions/parametric-relu');
+const Elu = require('./functions/elu');
+const Softplus = require('./functions/softplus');
+const SquaredLoss = require('./functions/squared-loss');
+const Optimizer = require('./optimizers/optimizer');
+const BatchGradientDescent = require('./optimizers/batch-gradient-descent');
+const Adam = require('./optimizers/adam');
 
-export const TYPES = {
+module.exports.TYPES = {
     [Sigmoid.name]: Sigmoid,
     [TanH.name]: TanH,
     [ParametricRelu.name]: ParametricRelu,

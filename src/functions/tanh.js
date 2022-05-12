@@ -1,6 +1,6 @@
-import Activator from './activator';
+const Activator = require('./activator');
 
-export default class TanH extends Activator {
+module.exports = class TanH extends Activator {
 
     static name = 'tanh';
 
@@ -12,4 +12,4 @@ export default class TanH extends Activator {
         return 1 - (n * n);
     }
 
-}
+};

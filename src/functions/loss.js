@@ -1,6 +1,6 @@
-import Exception from '../exceptions/exception';
+const Exception = require('../exceptions/exception');
 
-export default class Loss {
+module.exports = class Loss {
     
     static name = 'identity';
 
@@ -12,4 +12,4 @@ export default class Loss {
         return this.name;
     }
 
-}
+};

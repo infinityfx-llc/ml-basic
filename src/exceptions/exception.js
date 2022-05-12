@@ -1,7 +1,7 @@
-export default class Exception {
+module.exports = class Exception {
 
     constructor(message) {
         this.message = message;
     }
 
-}
+};

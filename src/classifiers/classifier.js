@@ -1,13 +1,13 @@
-import Exception from '../exceptions/exception';
-import IllegalArgumentException from '../exceptions/illegal-argument';
-import Sigmoid from '../functions/sigmoid';
-import Layer from '../layer';
-import Matrix from '../math/matrix';
-import BatchGradientDescent from '../optimizers/batch-gradient-descent';
-import { TYPES } from '../types';
-import { argmin, pad } from '../utils';
+const Exception = require('../exceptions/exception');
+const IllegalArgumentException = require('../exceptions/illegal-argument');
+const Sigmoid = require('../functions/sigmoid');
+const Layer = require('../layer');
+const Matrix = require('../math/matrix');
+const BatchGradientDescent = require('../optimizers/batch-gradient-descent');
+const { TYPES } = require('../types');
+const { argmin, pad } = require('../utils');
 
-export default class Classifier {
+module.exports = class Classifier {
 
     constructor() {
         if (this.constructor === Classifier) throw new Exception('Cannot instantiate abstract class Classifier');
@@ -89,4 +89,4 @@ export default class Classifier {
 		window.URL.revokeObjectURL(data);
     }
 
-}
+};

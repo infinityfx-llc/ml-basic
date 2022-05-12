@@ -1,8 +1,8 @@
-import IllegalArgumentException from '../exceptions/illegal-argument';
-import Matrix from '../math/matrix';
-import BatchGradientDescent from './batch-gradient-descent';
+const IllegalArgumentException = require('../exceptions/illegal-argument');
+const Matrix = require('../math/matrix');
+const BatchGradientDescent = require('./batch-gradient-descent');
 
-export default class Adam extends BatchGradientDescent {
+module.exports = class Adam extends BatchGradientDescent {
 
     static name = 'adam';
 
@@ -50,4 +50,4 @@ export default class Adam extends BatchGradientDescent {
         return super.deserialize(data, new Adam());
     }
 
-}
+};

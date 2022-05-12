@@ -1,12 +1,12 @@
-import Activator from './functions/activator';
-import Sigmoid from './functions/sigmoid';
-import IllegalArgumentException from './exceptions/illegal-argument';
-import Matrix from './math/matrix';
-import Optimizer from './optimizers/optimizer';
-import BatchGradientDescent from './optimizers/batch-gradient-descent';
-import { TYPES } from './types';
+const Activator = require('./functions/activator');
+const Sigmoid = require('./functions/sigmoid');
+const IllegalArgumentException = require('./exceptions/illegal-argument');
+const Matrix = require('./math/matrix');
+const Optimizer = require('./optimizers/optimizer');
+const BatchGradientDescent = require('./optimizers/batch-gradient-descent');
+const { TYPES } = require('./types');
 
-export default class Layer {
+module.exports = class Layer {
 
     constructor(input = 2, output = 1, activation = Sigmoid, optimizer = BatchGradientDescent, hyper_parameters = {}) {
         if (input < 1 || output < 1) throw new IllegalArgumentException('Input and output must be numbers greater than 0');

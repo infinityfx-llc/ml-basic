@@ -1,10 +1,10 @@
-import Exception from '../exceptions/exception';
-import IllegalArgumentException from '../exceptions/illegal-argument';
-import Layer from '../layer';
-import { argmin, combine } from '../utils';
-import Classifier from './classifier';
+const Exception = require('../exceptions/exception');
+const IllegalArgumentException = require('../exceptions/illegal-argument');
+const Layer = require('../layer');
+const { argmin, combine } = require('../utils');
+const Classifier = require('./classifier');
 
-export default class GeneticFX extends Classifier {
+module.exports = class GeneticFX extends Classifier {
 
     static name = 'genetic';
 
@@ -117,4 +117,4 @@ export default class GeneticFX extends Classifier {
         }, '\t');
     }
 
-}
+};

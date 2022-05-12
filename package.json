@@ -7,6 +7,7 @@
     "main": "src/main.js",
     "repository": "infinityfx-llc/ml-basic",
     "homepage": "https://github.com/infinityfx-llc/ml-basic#readme",
+    "bugs": "https://github.com/infinityfx-llc/ml-basic/issues",
     "funding": "https://ko-fi.com/infinityfx",
     "keywords": [
         "machine learning",
@@ -14,5 +15,8 @@
         "network",
         "ai",
         "classifier"
-    ]
+    ],
+    "browser": {
+        "fs": false
+    }
 }

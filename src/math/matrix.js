@@ -1,6 +1,6 @@
-import IllegalArgumentException from '../exceptions/illegal-argument';
+const IllegalArgumentException = require('../exceptions/illegal-argument');
 
-export default class Matrix {
+module.exports = class Matrix {
 
     constructor(rows, columns = rows, entries = []) {
         if (rows instanceof Matrix) return Matrix.copy(rows);
@@ -193,4 +193,4 @@ export default class Matrix {
         return new Matrix(data.rows, data.columsn, data.entries);
     }
 
-}
+};

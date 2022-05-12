@@ -1,7 +1,7 @@
-import Matrix from '../math/matrix';
-import Loss from './loss';
+const Matrix = require('../math/matrix');
+const Loss = require('./loss');
 
-export default class SquaredLoss extends Loss {
+module.exports = class SquaredLoss extends Loss {
 
     static name = 'squared_loss';
 
@@ -13,4 +13,4 @@ export default class SquaredLoss extends Loss {
         return Matrix.sub(target, output);
     }
 
-}
+};

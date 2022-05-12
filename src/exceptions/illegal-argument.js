@@ -1,9 +1,9 @@
-import Exception from './exception';
+const Exception = require('./exception');
 
-export default class IllegalArgumentException extends Exception {
+module.exports = class IllegalArgumentException extends Exception {
 
     constructor(message) {
         super(message);
     }
 
-}
+};
