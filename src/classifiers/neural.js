@@ -108,6 +108,7 @@ module.exports = class NeuralFX extends Classifier {
 
     serialize() {
         return JSON.stringify(Object.assign({ name: this.__proto__.constructor.name } , this), (_, value) => {
+            if (!value) return value;
 			if (value.prototype instanceof Loss || value instanceof Layer) return value.serialize();
 
 			return value;

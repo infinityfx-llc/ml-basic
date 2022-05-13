@@ -41,7 +41,7 @@ module.exports = class Optimizer {
 
     static deserialize(data, optimizer = new Optimizer()) {
         Object.entries(data).forEach(([key, val]) => {
-            if (key === 'aggregate') return this[key] = Matrix.deserialize(val);
+            if (key === 'aggregate') return this[key] = val ? Matrix.deserialize(val) : val;
 
             this[key] = val;
         });
