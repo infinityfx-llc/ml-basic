@@ -1,6 +1,6 @@
-const require = (url) => {
-    if (!require.stack) require.stack = [document.currentScript.src];
-    const base = require.stack[require.stack.length - 1].replace(/[^\\\/]*?$/, '');
+const __require = (url) => {
+    if (!__require.stack) __require.stack = [document.currentScript.src];
+    const base = __require.stack[__require.stack.length - 1].replace(/[^\\\/]*?$/, '');
 
     if (!/\.js$/i.test(url)) url += '.js';
     if (/^\.\.?(\/|\\)/.test(url)) {
@@ -9,8 +9,8 @@ const require = (url) => {
         url = window.location.origin + url;
     }
 
-    if (!require.cache) require.cache = {};
-    let exports = require.cache[url];
+    if (!__require.cache) __require.cache = {};
+    let exports = __require.cache[url];
 
     if (!exports) {
         try {
@@ -22,10 +22,10 @@ const require = (url) => {
             if (request.status !== 200) throw new Error(request.statusText);
 
             const module = { id: url, uri: url, exports };
-            require.stack.push(url);
-            new Function('require', 'exports', 'module', request.responseText)(require, exports, module);
-            require.cache[url] = exports = module.exports;
-            require.stack.pop();
+            __require.stack.push(url);
+            new Function('require', 'exports', 'module', request.responseText)(__require, exports, module);
+            __require.cache[url] = exports = module.exports;
+            __require.stack.pop();
         } catch (err) {
             throw new Error(`Error loading module ${url}: ${err}`);
         }
@@ -44,5 +44,5 @@ const require = (url) => {
         root.MLBasic = factory();
     }
 })(typeof self !== 'undefined' ? self : this, function() {
-    return typeof window !== 'undefined' && typeof window.document !== 'undefined' ? (window.require = require, require('./es6')) : require('./cjs');
+    return typeof window !== 'undefined' && typeof window.document !== 'undefined' ? (window.require = __require, require('./es6')) : require('./cjs');
 });
