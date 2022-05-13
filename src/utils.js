@@ -34,6 +34,5 @@ module.exports = {
     shuffle,
     pad,
     combine,
-    argmin,
-    isBrowser: () => typeof window !== 'undefined' && typeof window.document !== 'undefined'
+    argmin
 };
