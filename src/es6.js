@@ -25,5 +25,7 @@ const fromFile = async (file) => {
 
 module.exports = {
     classifiers,
+    NeuralFX,
+    GeneticFX,
     fromFile
 };

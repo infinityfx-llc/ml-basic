@@ -29,10 +29,13 @@ const argmin = (array) => {
     return array.reduce((index, n, i) => n <= min ? (min = n, i) : index, 0);
 };
 
+const isBrowser = () => typeof window !== 'undefined' && typeof window.document !== 'undefined';
+
 module.exports = {
     range,
     shuffle,
     pad,
     combine,
-    argmin
+    argmin,
+    isBrowser
 };

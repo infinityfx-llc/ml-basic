@@ -5,7 +5,7 @@ const Layer = require('../layer');
 const Matrix = require('../math/matrix');
 const BatchGradientDescent = require('../optimizers/batch-gradient-descent');
 const { TYPES } = require('../types');
-const { argmin, pad } = require('../utils');
+const { argmin, pad, isBrowser } = require('../utils');
 
 module.exports = class Classifier {
 
@@ -70,7 +70,6 @@ module.exports = class Classifier {
             validation_matrix[i] = await iteration_function(hyper_parameters);
         }
 
-        console.log(validation_matrix);
         const index = argmin(validation_matrix);
 
         return entries.reduce((map, [key, array], i) => {
@@ -79,14 +78,24 @@ module.exports = class Classifier {
         }, {});
     }
 
-    export(filename) {
-        let data = new Blob([this.serialize()], { type: 'application/json' }),
-			url = window.URL.createObjectURL(data),
-			a = document.createElement("a");
-		a.href = url;
-		a.download = filename + '.json';
-		a.click();
-		window.URL.revokeObjectURL(data);
+    export(path) {
+        let data = this.serialize();
+        if (!/\.json$/i.test(path)) path = path + '.json';
+
+        if (!isBrowser()) {
+            const fs = require('fs');
+            fs.writeFileSync(path, data);
+
+            return;
+        }
+
+        data = new Blob([data], { type: 'application/json' });
+        let url = URL.createObjectURL(data),
+            a = document.createElement('a');
+        a.href = url;
+        a.download = path.match(/[^\/|\\]*$/)[0];
+        a.click();
+        URL.revokeObjectURL(data);
     }
 
 };
