@@ -1,29 +1,11 @@
 const IllegalArgumentException = require('./exceptions/illegal-argument');
 const utils = require('./utils');
 
-/**
- * @namespace {PreProcessor}
- */
 module.exports = class PreProcessor {
 
-    /**
-     * @private
-     */
     static inputKeys = ['data', 'input', 'in'];
-
-    /**
-     * @private
-     */
     static targetKeys = ['target', 'output', 'out'];
 
-    /**
-     * 
-     * @constructor
-     * @param {Object[]} data 
-     * @param {Number|Number[]} data[].input
-     * @param {Number|Number[]} data[].target
-     * @throws {IllegalArgumentException}
-     */
     constructor(data) {
         if (!Array.isArray(data)) throw new IllegalArgumentException('Data must be an instance of Array');
 
@@ -39,12 +21,6 @@ module.exports = class PreProcessor {
         });
     }
 
-    /**
-     * @private
-     * @param {Object} object 
-     * @param {String[]} [keySet = PreProcessor.inputKeys]
-     * @returns {Number}
-     */
     findKey(object, keySet = PreProcessor.inputKeys) {
         for (const key of keySet) {
             if (key in object) return key;
@@ -53,11 +29,6 @@ module.exports = class PreProcessor {
         return 0;
     }
 
-    /**
-     * @private
-     * @param {Object} object 
-     * @returns {Number}
-     */
     hash(object) {
         let hash = 0,
             str = JSON.stringify(object);
@@ -70,13 +41,6 @@ module.exports = class PreProcessor {
         return hash;
     }
 
-    /**
-     * 
-     * @param {Object} options
-     * @param {Boolean} [options.nullToZero = true]
-     * @param {Boolean} [options.removeDuplicates = true]
-     * @returns {PreProcessor}
-     */
     clean({ nullToZero = true, removeDuplicates = true } = {}) {
         const map = {};
 
@@ -111,12 +75,6 @@ module.exports = class PreProcessor {
         return this;
     }
 
-    /**
-     *  
-     * @param {Number} [min = 0] 
-     * @param {Number} [max = 1] 
-     * @returns {PreProcessor}
-     */
     normalize(min = 0, max = 1) {
         let __max = this.max('input'),
             a_0 = (max - min) / (__max - this.min('input')),
@@ -136,11 +94,6 @@ module.exports = class PreProcessor {
         return this;
     }
 
-    /**
-     * 
-     * @param {String} [key = input] 
-     * @returns {Number}
-     */
     min(key = 'input') {
         return this.data.reduce((min, val) => {
             const __min = utils.min(val[key]);
@@ -148,11 +101,6 @@ module.exports = class PreProcessor {
         }, Number.MAX_VALUE);
     }
 
-    /**
-     * 
-     * @param {String} [key = input] 
-     * @returns {Number}
-     */
     max(key = 'input') {
         return this.data.reduce((max, val) => {
             const __max = utils.max(val[key]);
@@ -164,10 +112,6 @@ module.exports = class PreProcessor {
         //implement validation split
     }
 
-    /**
-     * 
-     * @returns {Object[]}
-     */
     out() {
         return this.data;
     }

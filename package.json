@@ -1,10 +1,11 @@
 {
     "name": "ml-basic",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Lightweight machine learning library",
     "license": "GPL-3.0",
     "author": "InfinityFX <contact@infinity-fx.com> (https://infinity-fx.com)",
-    "main": "src/main.js",
+    "main": "main.js",
+    "types": "types.d.ts",
     "repository": "infinityfx-llc/ml-basic",
     "homepage": "https://github.com/infinityfx-llc/ml-basic#readme",
     "bugs": "https://github.com/infinityfx-llc/ml-basic/issues",

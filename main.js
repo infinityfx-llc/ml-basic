@@ -44,5 +44,5 @@ const __require = (url) => {
         root.MLBasic = factory();
     }
 })(typeof self !== 'undefined' ? self : this, function() {
-    return typeof window !== 'undefined' && typeof window.document !== 'undefined' ? (window.require = __require, require('./es6')) : require('./cjs');
+    return typeof window !== 'undefined' && typeof window.document !== 'undefined' ? (window.require = __require, require('./src/es6')) : require('./src/cjs');
 });
