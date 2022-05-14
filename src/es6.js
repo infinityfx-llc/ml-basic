@@ -1,10 +1,11 @@
-const GeneticFX = require('./classifiers/genetic');
-const NeuralFX = require('./classifiers/neural');
+const Genetic = require('./classifiers/genetic');
+const Neural = require('./classifiers/neural');
+const PreProcessor = require('./pre-processor');
 const IllegalArgumentException = require('./exceptions/illegal-argument');
 
 const classifiers = {
-    [NeuralFX.name]: NeuralFX,
-    [GeneticFX.name]: GeneticFX
+    [Neural.name]: Neural,
+    [Genetic.name]: Genetic
 };
 
 const fromFile = async (file) => {
@@ -25,7 +26,8 @@ const fromFile = async (file) => {
 
 module.exports = {
     classifiers,
-    NeuralFX,
-    GeneticFX,
+    PreProcessor,
+    Neural,
+    Genetic,
     fromFile
 };

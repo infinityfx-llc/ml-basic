@@ -5,17 +5,17 @@ const Layer = require('../layer');
 const Matrix = require('../math/matrix');
 const BatchGradientDescent = require('../optimizers/batch-gradient-descent');
 const { TYPES } = require('../types');
-const { pad, range, shuffle } = require('../utils');
+const { pad, range, shuffle, argmax } = require('../utils');
 const Classifier = require('./classifier');
 
-//implement labeled data
-//implement binary selection
+//pre processors
+//return log object from fitting
 
-module.exports = class NeuralFX extends Classifier {
+module.exports = class Neural extends Classifier {
 
     static name = 'neural';
 
-    constructor({ shape = [2, 1], optimizer = BatchGradientDescent.name, loss_function = SquaredLoss.name, hyper_parameters = {} } = {}) {
+    constructor({ shape = [2, 1], optimizer = BatchGradientDescent.name, loss_function = SquaredLoss.name, hyper_parameters = {}, binary = false, labels = [] } = {}) {
         super();
 
         this.epochs = 0;
@@ -23,10 +23,24 @@ module.exports = class NeuralFX extends Classifier {
         this.loss = TYPES[loss_function];
 
         [this.layers, this.shape] = this.createNetwork(shape, optimizer, hyper_parameters);
+
+        this.labels = binary ? pad(labels, this.shape.output) : null;
+        this.binary = binary;
     }
 
     async predict(input) {
-        return await super.predict(this.layers, input);
+        const output = await super.predict(this.layers, input);
+
+        if (this.binary) {
+            const index = argmax(output);
+
+            return {
+                label: this.labels[index],
+                certainty: output[index]
+            };
+        }
+        
+        return output;
     }
 
     async backPropagate(input, target, hyper_parameters) {
@@ -107,12 +121,12 @@ module.exports = class NeuralFX extends Classifier {
     }
 
     serialize() {
-        return JSON.stringify(Object.assign({ name: this.__proto__.constructor.name } , this), (_, value) => {
+        return JSON.stringify(Object.assign({ name: this.__proto__.constructor.name }, this), (_, value) => {
             if (!value) return value;
-			if (value.prototype instanceof Loss || value instanceof Layer) return value.serialize();
+            if (value.prototype instanceof Loss || value instanceof Layer) return value.serialize();
 
-			return value;
-		}, '\t');
+            return value;
+        }, '\t');
     }
 
 };

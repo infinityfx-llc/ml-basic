@@ -4,7 +4,7 @@ const Layer = require('../layer');
 const { argmin, combine } = require('../utils');
 const Classifier = require('./classifier');
 
-module.exports = class GeneticFX extends Classifier {
+module.exports = class Genetic extends Classifier {
 
     static name = 'genetic';
 
