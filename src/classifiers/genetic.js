@@ -8,8 +8,8 @@ module.exports = class Genetic extends Classifier {
 
     static name = 'genetic';
 
-    constructor({ shape = [2, 1], fitness_function = null, hyper_parameters = {} } = {}) {
-        super();
+    constructor({ shape = [2, 1], fitness_function = null, hyper_parameters = {}, options = {} } = {}) {
+        super(options.multithreaded);
 
         this.generations = 0;
         this.fittest = 0;
@@ -30,7 +30,13 @@ module.exports = class Genetic extends Classifier {
     }
 
     async predict(input, candidate = this.fittest) {
-        return await super.predict(this.population[candidate], input);
+        const outputs = await Classifier.propagate({
+            input,
+            network: this.population[candidate],
+            input_size: this.shape.input
+        });
+        
+        return outputs[outputs.length - 1].toArray();
     }
 
     async fitness() {
@@ -112,6 +118,7 @@ module.exports = class Genetic extends Classifier {
     serialize() {
         return JSON.stringify(Object.assign({ name: this.__proto__.constructor.name }, this), (_, value) => {
             if (value instanceof Layer) return value.serialize();
+            if (value instanceof Pool || key === 'multithreading') return;
 
             return value;
         }, '\t');

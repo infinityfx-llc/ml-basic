@@ -15,15 +15,15 @@ Install the package using NPM, run:
 $ npm i ml-basic
 ```
 
-## Usage
+### Usage
 
 ### NodeJS
 ```javascript
 const MLBasic = require('ml-basic');
 
-// creates a fully connected neural classifier with 2 inputs neurons, 2 hidden neurons and 1 output neuron
+// creates a fully connected neural classifier with 2 inputs neurons, 3 hidden neurons and 1 output neuron.
 
-const classifier = new MLBasic.classifiers.neural({
+const classifier = new MLBasic.Neural({
     shape: [2, 3, 1]
 });
 
@@ -35,7 +35,7 @@ const result = await classifier.predict([1, 0]);
 ### Browser
 When using the package browser-side, you can either include it as a script or import the package when you have it installed locally.
 ```html
-<script src="https://unpkg.com/browse/ml-basic/src/main.js" type="text/javascript"></script>
+<script src="https://unpkg.com/browse/ml-basic/index.js" type="text/javascript"></script>
 ```
 
 ```javascript
@@ -43,9 +43,9 @@ import MLBasic from 'ml-basic';
 ```
 
 ```javascript
-// creates a fully connected neural classifier with 2 inputs neurons, 2 hidden neurons and 1 output neuron
+// creates a fully connected neural classifier with 2 inputs neurons, 3 hidden neurons and 1 output neuron.
 
-const classifier = new MLBasic.classifiers.neural({
+const classifier = new MLBasic.Neural({
     shape: [2, 3, 1]
 });
 
@@ -53,3 +53,7 @@ const result = await classifier.predict([1, 0]);
 
 // result = [0.532..]
 ```
+
+## Examples
+
+- ### [Neural classifier](docs/examples/neural.md)

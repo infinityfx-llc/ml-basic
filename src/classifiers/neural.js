@@ -2,21 +2,21 @@ const IllegalArgumentException = require('../exceptions/illegal-argument');
 const Loss = require('../functions/loss');
 const SquaredLoss = require('../functions/squared-loss');
 const Layer = require('../layer');
-const Matrix = require('../math/matrix');
 const BatchGradientDescent = require('../optimizers/batch-gradient-descent');
+const Pool = require('../threading/pool');
+const Task = require('../threading/task');
 const { TYPES } = require('../types');
 const { pad, range, shuffle, argmax } = require('../utils');
 const Classifier = require('./classifier');
 
-//pre processors
 //return log object from fitting
 
 module.exports = class Neural extends Classifier {
 
     static name = 'neural';
 
-    constructor({ shape = [2, 1], optimizer = BatchGradientDescent.name, loss_function = SquaredLoss.name, hyper_parameters = {}, binary = false, labels = [] } = {}) {
-        super();
+    constructor({ shape = [2, 1], optimizer = BatchGradientDescent.name, loss_function = SquaredLoss.name, hyper_parameters = {}, options = {} } = {}) {
+        super(options.multithreaded);
 
         this.epochs = 0;
         this.error = 1;
@@ -24,12 +24,30 @@ module.exports = class Neural extends Classifier {
 
         [this.layers, this.shape] = this.createNetwork(shape, optimizer, hyper_parameters);
 
-        this.labels = binary ? pad(labels, this.shape.output) : null;
-        this.binary = binary;
+        this.labels = options.binary ? pad(options.labels, this.shape.output) : null;
+        this.binary = options.binary || false;
+    }
+
+    async propagate(input) {
+        return await Classifier.propagate({
+            input,
+            network: this.layers,
+            input_size: this.shape.input
+        });
     }
 
     async predict(input) {
-        const output = await super.predict(this.layers, input);
+        const outputs = this.multithreading ?
+            await this.pool.queue(
+                Task.Propagate({
+                    input,
+                    network: this.layers.map(layer => layer.serialize()),
+                    input_size: this.shape.input
+                })
+            ) :
+            await this.propagate(input);
+        let output = outputs[outputs.length - 1];
+        output = this.multithreading ? Array.prototype.slice.call(output.entries) : output.toArray();
 
         if (this.binary) {
             const index = argmax(output);
@@ -39,32 +57,19 @@ module.exports = class Neural extends Classifier {
                 certainty: output[index]
             };
         }
-        
+
         return output;
     }
 
-    async backPropagate(input, target, hyper_parameters) {
-        if (!Array.isArray(input)) throw new IllegalArgumentException('Input must be an instance of Array');
-        if (!Array.isArray(target) || target.length !== this.shape.output) throw new IllegalArgumentException(`Target must be an instance of Array of length ${this.shape.output}`);
-
-        input = pad(input, this.shape.input);
-        let output = Matrix.fromArray(input);
-        target = Matrix.fromArray(target);
-
-        const outputs = [output];
-        for (let i = 0; i < this.layers.length; i++) {
-            output = this.layers[i].propagate(output);
-            outputs.push(output);
-        }
-
-        let error = this.loss.mean(output, target);
-        let loss = this.loss.derivative(output, target);
-
-        for (let i = outputs.length - 1; i > 0; i--) {
-            loss = this.layers[i - 1].backPropagate(outputs[i - 1], outputs[i], loss, hyper_parameters);
-        }
-
-        return error;
+    async backPropagate(input, target, hyper_parameters = {}) {
+        return await Neural.backPropagate({
+            input,
+            target,
+            network: this.layers,
+            shape: this.shape,
+            loss_function: this.loss,
+            hyper_parameters
+        });
     }
 
     flush() {
@@ -85,7 +90,19 @@ module.exports = class Neural extends Classifier {
 
                 if (!input || !target) throw new IllegalArgumentException('Data entry must be an Object containing input and target values');
 
-                const error = await this.backPropagate(input, target, hyper_parameters);
+                const error = this.multithreading ?
+                    await this.pool.queue(Task.BackPropagate({
+                        input,
+                        target,
+                        network: this.layers.map(layer => layer.serialize()),
+                        shape: {
+                            input: this.shape.input,
+                            output: this.shape.output
+                        },
+                        loss_function: this.loss.serialize(),
+                        hyper_parameters
+                    })) :
+                    await this.backPropagate(input, target, hyper_parameters);
                 aggregate_error += error / arr.length;
             }
 
@@ -124,6 +141,7 @@ module.exports = class Neural extends Classifier {
         return JSON.stringify(Object.assign({ name: this.__proto__.constructor.name }, this), (_, value) => {
             if (!value) return value;
             if (value.prototype instanceof Loss || value instanceof Layer) return value.serialize();
+            if (value instanceof Pool || key === 'multithreading') return;
 
             return value;
         }, '\t');

@@ -1,12 +1,16 @@
 const __require = (url) => {
     if (!__require.stack) __require.stack = [document.currentScript.src];
-    const base = __require.stack[__require.stack.length - 1].replace(/[^\\\/]*?$/, '');
+    const base = __require.stack[__require.stack.length - 1].replace(/[^\\\/]*?$/g, '');
 
     if (!/\.js$/i.test(url)) url += '.js';
     if (/^\.\.?(\/|\\)/.test(url)) {
-        url = /\/|\\/.test(url.charAt(1)) ? base + url.slice(2) : base + url;
+        url = url.replace(/^\.(?:\/|\\)/, '');
+
+        const count = (url.split(/\.\.(?:\/|\\)/) || [null]).length - 1,
+            regx = new RegExp(`(?:(?:\\/|\\\\)?[^\\/\\\\]*?(?:\\/|\\\\)){${count}}$`, 'g');
+        url = (count ? base.replace(regx, '/') : base) + url.replace(/\.\.(?:\/|\\)/g, '');
     } else {
-        url = window.location.origin + url;
+        url = window.location.origin + '/' + url.replace(/^(\/|\\)/, '');
     }
 
     if (!__require.cache) __require.cache = {};
@@ -34,15 +38,19 @@ const __require = (url) => {
     return exports;
 };
 
-(function(root, factory) {
+//detect circular require
+//currentScript fallback
+
+(function (root, factory) {
     if (typeof define === 'function' && define.amd) {
         define([], factory);
     } else
-    if (typeof module === 'object' && module.exports) {
-        module.exports = factory();
-    } else {
-        root.MLBasic = factory();
-    }
-})(typeof self !== 'undefined' ? self : this, function() {
-    return typeof window !== 'undefined' && typeof window.document !== 'undefined' ? (window.require = __require, require('./src/es6')) : require('./src/cjs');
+        if (typeof module === 'object' && module.exports) {
+            module.exports = factory();
+        } else {
+            root.MLBasic = factory();
+        }
+})(typeof self !== 'undefined' ? self : this, function () {
+    if (typeof window !== 'undefined' && typeof window.document !== 'undefined') window.require = __require;
+    return require('./src/main');
 });

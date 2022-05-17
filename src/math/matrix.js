@@ -8,7 +8,13 @@ module.exports = class Matrix {
 
         this.rows = rows;
         this.columns = columns;
-        this.entries = new Array(rows * columns).fill(0).map((val, i) => entries[i] || val);
+
+        if (entries instanceof Float32Array) return (this.entries = entries, this);
+        
+        const bytes = Float32Array.BYTES_PER_ELEMENT * rows * columns;
+        this.buffer = typeof SharedArrayBuffer !== 'undefined' ? new SharedArrayBuffer(bytes) : new ArrayBuffer(bytes);
+        this.entries = new Float32Array(this.buffer);
+        for (let i = 0; i < this.entries.length; i++) this.entries[i] = entries[i] || 0;
     }
 
     static copy(matrix) {
@@ -22,7 +28,7 @@ module.exports = class Matrix {
     }
 
     zeros() {
-        this.entries = new Array(this.entries.length).fill(0);
+        this.entries.fill(0);
 
         return this;
     }
@@ -175,13 +181,13 @@ module.exports = class Matrix {
         return this.entries.reduce((a, b) => a + b, 0);
     }
 
-    static fromArray(array) {
+    static fromArray(array) { //clone data
         if (!Array.isArray(array)) throw new IllegalArgumentException('Array must be an instance of Array');
 
         return new Matrix(array.length, 1, array);
     }
 
-    toArray() {
+    toArray() { //maybe clone data
         return this.entries;
     }
 
@@ -190,7 +196,7 @@ module.exports = class Matrix {
     }
 
     static deserialize(data) {
-        return new Matrix(data.rows, data.columsn, data.entries);
+        return new Matrix(data.rows, data.columns, data.entries);
     }
 
 };

@@ -44,7 +44,7 @@ const argmax = (array) => {
     return array.reduce((index, n, i) => n >= max ? (max = n, i) : index, 0);
 };
 
-const isBrowser = () => typeof window !== 'undefined' && typeof window.document !== 'undefined';
+const isBrowser = () => typeof self !== 'undefined' && typeof self.navigator !== 'undefined' && typeof self.location !== 'undefined';
 
 module.exports = {
     range,
