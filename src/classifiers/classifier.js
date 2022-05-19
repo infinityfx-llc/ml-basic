@@ -1,5 +1,6 @@
 const Exception = require('../exceptions/exception');
 const IllegalArgumentException = require('../exceptions/illegal-argument');
+const Loss = require('../functions/loss');
 const Sigmoid = require('../functions/sigmoid');
 const Layer = require('../layer');
 const Matrix = require('../math/matrix');
@@ -78,7 +79,7 @@ module.exports = (() => {
 
         static async backPropagate({ input, target, network, shape, loss_function, hyper_parameters } = {}) {
             if (!Array.isArray(target) || target.length !== shape.output) throw new IllegalArgumentException(`Target must be an instance of Array of length ${output_size}`);
-            if (!(loss_function instanceof Loss)) throw new IllegalArgumentException('Loss function must be an instance of Loss');
+            if (!(loss_function.prototype instanceof Loss)) throw new IllegalArgumentException('Loss function must be an instance of Loss');
     
             target = Matrix.fromArray(target);
             const outputs = await this.propagate({
@@ -90,12 +91,12 @@ module.exports = (() => {
     
             let error = loss_function.mean(output, target);
             let loss = loss_function.derivative(output, target);
-    
+
             for (let i = outputs.length - 1; i > 0; i--) {
                 loss = network[i - 1].backPropagate(outputs[i - 1], outputs[i], loss, hyper_parameters);
             }
     
-            return error;
+            return [error, network];
         }
 
         async tune(iteration_function, parameters = {}) {

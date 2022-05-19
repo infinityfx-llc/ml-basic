@@ -111,14 +111,17 @@ module.exports = class Genetic extends Classifier {
 
             this[key] = val;
         });
+        this.shape.input = this.shape[0];
+        this.shape.output = this.shape[this.shape.length - 1];
 
         return this;
     }
 
     serialize() {
-        return JSON.stringify(Object.assign({ name: this.__proto__.constructor.name }, this), (_, value) => {
+        return JSON.stringify(Object.assign({ name: this.__proto__.constructor.name }, this), (key, value) => {
             if (value instanceof Layer) return value.serialize();
             if (value instanceof Pool || key === 'multithreading') return;
+            if (value instanceof Float64Array) return Array.prototype.slice.call(value);
 
             return value;
         }, '\t');

@@ -1,7 +1,7 @@
 {
     "name": "ml-basic",
-    "version": "1.2.0",
-    "description": "Lightweight machine learning library",
+    "version": "1.2.2",
+    "description": "Lightweight, zero dependency, machine learning library",
     "license": "GPL-3.0",
     "author": "InfinityFX <contact@infinity-fx.com> (https://infinity-fx.com)",
     "main": "index.js",
@@ -15,7 +15,10 @@
         "neural",
         "network",
         "ai",
-        "classifier"
+        "classifier",
+        "multithreading",
+        "zero dependency",
+        "lightweight"
     ],
     "browser": {
         "fs": false,

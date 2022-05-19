@@ -23,7 +23,8 @@ module.exports = (() => {
             const worker = new Worker(this.file);
 
             const onmessage = e => {
-                worker.resolve('data' in e ? e.data : e);
+                e = typeof e === 'object' && 'data' in e ? e.data : e;
+                worker.resolve(e);
 
                 this.available.push(worker);
 

@@ -16,7 +16,7 @@ module.exports = class Optimizer {
         this.t = 1;
     }
 
-    useParameters({ learning_rate = 0.1 } = {}) {
+    useParameters({ learning_rate = this.learning_rate } = {}) {
         if (learning_rate <= 0) throw new IllegalArgumentException('Learning rate must be a number greater than 0');
 
         this.learning_rate = learning_rate;
@@ -41,9 +41,9 @@ module.exports = class Optimizer {
 
     static deserialize(data, optimizer = new Optimizer()) {
         Object.entries(data).forEach(([key, val]) => {
-            if (key === 'aggregate') return this[key] = val ? Matrix.deserialize(val) : val;
+            if (key === 'aggregate') return optimizer[key] = val ? Matrix.deserialize(val) : val;
 
-            this[key] = val;
+            optimizer[key] = val;
         });
 
         return optimizer;

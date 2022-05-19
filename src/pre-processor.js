@@ -15,10 +15,19 @@ module.exports = class PreProcessor {
                 target = val[this.findKey(val, PreProcessor.targetKeys)];
 
             return {
-                input: Array.isArray(input) ? input : [input],
-                target: Array.isArray(target) ? target : [target]
+                input: this.toArray(input),
+                target: this.toArray(target)
             };
         });
+    }
+
+    toArray(value) {
+        const bytes = (Array.isArray(value) ? value.length : 1) * Float64Array.BYTES_PER_ELEMENT,
+            buffer = typeof SharedArrayBuffer !== 'undefined' ? new SharedArrayBuffer(bytes) : new ArrayBuffer(bytes),
+            array = new Float64Array(buffer);
+        for (let i = 0; i < array.length; i++) array[i] = Array.isArray(value) ? value[i] : value;
+
+        return array;
     }
 
     findKey(object, keySet = PreProcessor.inputKeys) {

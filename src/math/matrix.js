@@ -9,18 +9,18 @@ module.exports = class Matrix {
         this.rows = rows;
         this.columns = columns;
 
-        if (entries instanceof Float32Array) return (this.entries = entries, this);
+        if (entries instanceof Float64Array) return (this.entries = entries, this);
         
-        const bytes = Float32Array.BYTES_PER_ELEMENT * rows * columns;
+        const bytes = Float64Array.BYTES_PER_ELEMENT * rows * columns;
         this.buffer = typeof SharedArrayBuffer !== 'undefined' ? new SharedArrayBuffer(bytes) : new ArrayBuffer(bytes);
-        this.entries = new Float32Array(this.buffer);
+        this.entries = new Float64Array(this.buffer);
         for (let i = 0; i < this.entries.length; i++) this.entries[i] = entries[i] || 0;
     }
 
     static copy(matrix) {
         if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
-
-        return new Matrix(matrix.rows, matrix.columns, matrix.entries);
+        
+        return new Matrix(matrix.rows, matrix.columns, matrix.entries.slice());
     }
 
     isEqualShape(matrix) {

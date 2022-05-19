@@ -10,7 +10,7 @@ module.exports = class Task {
 
     async propagate(shared) {
         const outputs = await Classifier.propagate({
-            input: shared.input, 
+            input: shared.input,
             network: shared.network.map(layer => Layer.deserialize(layer)),
             input_size: shared.input_size
         });
@@ -26,7 +26,7 @@ module.exports = class Task {
     }
 
     async back_propagate(shared) {
-        return await Classifier.backPropagate({
+        const [error, network] = await Classifier.backPropagate({
             input: shared.input,
             target: shared.target,
             network: shared.network.map(layer => Layer.deserialize(layer)),
@@ -34,6 +34,8 @@ module.exports = class Task {
             loss_function: TYPES[shared.loss_function],
             hyper_parameters: shared.hyper_parameters
         });
+
+        return [error, network.map(layer => layer.serialize())];
     }
 
     static BackPropagate(data) {
