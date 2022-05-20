@@ -1,10 +1,13 @@
-import { HyperParameters } from '../global';
+import { Activation, HyperParameters } from '../global';
 import { Classifier } from './classifier';
 
 export class Genetic extends Classifier {
 
     constructor({ shape, fitness_function, hyper_parameters, options }?: {
-        shape?: number[];
+        shape?: number[] | {
+            size: number;
+            activation: Activation;
+        }[];
         fitness_function?: (predict: (input: number[]) => number[]) => number;
         hyper_parameters?: HyperParameters;
         options?: Classifier.Options;

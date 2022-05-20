@@ -33,6 +33,12 @@ module.exports = class Matrix {
         return this;
     }
 
+    ones() {
+        this.entries.fill(1);
+
+        return this;
+    }
+
     scale(n = 1) {
         for (let i = 0; i < this.entries.length; i++) this.entries[i] *= n;
 

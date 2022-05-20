@@ -1,13 +1,16 @@
 import { Classifier } from '../classifiers/classifier';
 import { Matrix } from '../math/matrix';
-import { HyperParameters } from '../global';
+import { Activation, HyperParameters, Loss, Optimizer } from '../global';
 
 export class Neural extends Classifier {
 
     constructor({ shape, optimizer, loss_function, hyper_parameters, options }?: { 
-        shape?: number[];
-        optimizer?: string;
-        loss_function?: string;
+        shape?: number[] | {
+            size: number;
+            activation: Activation;
+        }[];
+        optimizer?: Optimizer;
+        loss_function?: Loss;
         hyper_parameters?: HyperParameters;
         options?: Classifier.Options;
     });

@@ -21,7 +21,7 @@ module.exports = (() => {
 
     return class Classifier {
 
-        constructor(multithreaded = true) {
+        constructor(multithreaded = false) {
             if (this.constructor === Classifier) throw new Exception('Cannot instantiate abstract class Classifier');
 
             try {

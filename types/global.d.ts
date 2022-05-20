@@ -5,3 +5,9 @@ export interface HyperParameters {
     beta2?: number;
     epsilon?: number;
 }
+
+export type Activation = 'sigmoid' | 'tanh' | 'elu' | 'parametric-relu' | 'softplus';
+
+export type Optimizer = 'gradient_descent' | 'batch_gradient_descent' | 'rms_prop' | 'adam';
+
+export type Loss = 'squared_loss';
