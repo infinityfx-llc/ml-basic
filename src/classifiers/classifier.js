@@ -2,12 +2,14 @@ const Exception = require('../exceptions/exception');
 const IllegalArgumentException = require('../exceptions/illegal-argument');
 const Loss = require('../functions/loss');
 const Sigmoid = require('../functions/sigmoid');
+const SquaredLoss = require('../functions/squared-loss');
 const Layer = require('../layer');
+const Log = require('../log');
 const Matrix = require('../math/matrix');
 const BatchGradientDescent = require('../optimizers/batch-gradient-descent');
 const Pool = require('../threading/pool');
 const { TYPES } = require('../types');
-const { argmin, pad, isBrowser } = require('../utils');
+const { argmin, pad, isBrowser, shuffle, range } = require('../utils');
 
 module.exports = (() => {
 
@@ -61,8 +63,9 @@ module.exports = (() => {
             return [network, __shape];
         }
 
-        static async propagate({ input, network, input_size } = {}) {
+        static async propagate(input, network) {
             if (!Array.isArray(input)) throw new IllegalArgumentException('Input must be an instance of Array');
+            const input_size = network[0].size.input;
 
             input = pad(input, input_size);
             let output = Matrix.fromArray(input), outputs = [output];
@@ -77,26 +80,61 @@ module.exports = (() => {
             return outputs;
         }
 
-        static async backPropagate({ input, target, network, shape, loss_function, hyper_parameters } = {}) {
-            if (!Array.isArray(target) || target.length !== shape.output) throw new IllegalArgumentException(`Target must be an instance of Array of length ${output_size}`);
+        static async backPropagate(input, target, network, { loss_function = SquaredLoss, hyper_parameters = {} } = {}) {
+            const output_size = network[network.length - 1].size.output;
+            if (!Array.isArray(target) || target.length !== output_size) throw new IllegalArgumentException(`Target must be an instance of Array of length ${output_size}`);
             if (!(loss_function.prototype instanceof Loss)) throw new IllegalArgumentException('Loss function must be an instance of Loss');
-    
+
             target = Matrix.fromArray(target);
-            const outputs = await this.propagate({
-                input,
-                network,
-                input_size: shape.input
-            });
+            const outputs = await this.propagate(input, network);
             const output = outputs[outputs.length - 1];
-    
+
             let error = loss_function.mean(output, target);
             let loss = loss_function.derivative(output, target);
 
             for (let i = outputs.length - 1; i > 0; i--) {
                 loss = network[i - 1].backPropagate(outputs[i - 1], outputs[i], loss, hyper_parameters);
             }
-    
+
             return [error, network];
+        }
+
+        static async fit(data, network, { loss_function = SquaredLoss, options = {} } = {}) {
+            const {
+                max_epochs = 1,
+                error_threshold = 0,
+                iterative = false,
+                hyper_parameters = {}
+            } = options;
+            if (!Array.isArray(data)) throw new IllegalArgumentException('Data must be an instance of Array');
+
+            const log = new Log();
+
+            for (let i = 0; i < max_epochs; i++) {
+                const arr = shuffle(range(data.length));
+
+                let aggregate_error = 0;
+                for (let j = 0; j < arr.length; j++) {
+                    const index = iterative ? j : arr[j];
+                    const { input, target } = data[index];
+
+                    if (!input || !target) throw new IllegalArgumentException('Data entry must be an Object containing input and target values');
+
+                    const [error] = await this.backPropagate(input, target, network, { loss_function, hyper_parameters });
+                    aggregate_error += error / arr.length;
+                }
+
+                log.increment({ epochs: 1 });
+                log.set({ error: aggregate_error });
+                log.add({
+                    error: aggregate_error,
+                    epoch: log.epochs
+                });
+
+                if (log.error <= error_threshold) break;
+            }
+
+            return [log.end(), network];
         }
 
         async tune(iteration_function, parameters = {}) {

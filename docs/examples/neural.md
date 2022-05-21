@@ -12,7 +12,7 @@ const neuralClassifier = MLBasic.Neural({
         batch_size: 6 // The batch size used for batch gradient descent.
     },
     options: {
-        multithreaded: true // Default value = true, whether to use multithreading for prediction and fitting tasks.
+        multithreaded: true // Default value = false, whether to use multithreading for prediction and fitting tasks.
     }
 });
 
@@ -32,12 +32,12 @@ const data = [
 
 // Fit the classifier to the training data set
 
-const error = await neuralClassifier.fit(data, {
+const log = await neuralClassifier.fit(data, {
     max_epochs: 100, // Train the classifer for a maximum of 100 epochs, where 1 epoch consists of all data samples.
     iterative: false // Default value = false, whether to turn-off order randomization of the data samples.
 });
 
-// error = 0.238..
+// log.error = 0.238..
 
 // Export the trained model to a JSON file.
 

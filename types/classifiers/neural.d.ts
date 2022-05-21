@@ -1,8 +1,22 @@
 import { Classifier } from '../classifiers/classifier';
 import { Matrix } from '../math/matrix';
 import { Activation, HyperParameters, Loss, Optimizer } from '../global';
+import { Log } from '../log';
+import { Layer } from '../layer';
+
+declare interface Neural implements Classifier {
+    epochs: number;
+    error: number;
+    loss: object;
+    layers: Layer[];
+    shape: number[];
+    labels: string[] | null;
+    binary: boolean;
+}
 
 export class Neural extends Classifier {
+
+    static name = 'neural';
 
     constructor({ shape, optimizer, loss_function, hyper_parameters, options }?: { 
         shape?: number[] | {
@@ -34,7 +48,7 @@ export class Neural extends Classifier {
         error_threshold?: number;
         iterative?: boolean;
         hyper_parameters?: HyperParameters;
-    }): Promise<Number>;
+    }): Promise<Log>;
 
     tune(data: {
         input: number[];

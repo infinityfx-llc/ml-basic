@@ -6,6 +6,14 @@
 
 Lightweight, zero dependency, machine learning library for use in NodeJS and browsers.
 
+## Table of contents
+- [Get started](#get-started)
+    - [Installation](#installation)
+    - [Usage](#usage)
+- [Classifiers](#classifiers)
+- [Pre processor](#pre-processor)
+- [Examples](#examples)
+
 ## Get started
 
 ### Installation
@@ -52,6 +60,46 @@ const classifier = new MLBasic.Neural({
 const result = await classifier.predict([1, 0]);
 
 // result = [0.532..]
+```
+
+## Classifiers
+
+```javascript
+const neuralClassifer = new MLBasic.Neural({ ... });
+
+const geneticClassifier = new MLBasic.Genetic({ ... });
+```
+
+## Pre processor
+
+```javascript
+const rawData = [
+    [
+        [1.421, 8.482, 2.589, ...], // Input data
+        [0.875, 5.892, 5.978, ...] // Target data
+    ],
+    ...
+]
+
+// Create a pre processor to convert, clean and normalize raw data.
+
+const preProcessor = new MLBasic.PreProcessor(rawData);
+
+// Clean the data by removing undefined, inconsistent or redundant values.
+
+preProcessor.clean({ nullToZero: true, removeDuplicates: true }); // nullToZero (default = true), removeDuplicates (default = true)
+
+preProcessor.normalize(0, 1); // min = 0 (default = 0), max = 1 (default = 1)
+
+const data = preProcessor.out();
+
+// data = [
+//     {
+//         input: [0.168, 1.000, 0.305, ...],
+//         target: [0.146, 0.986, 1.000, ...]
+//     },
+//     ...
+// ]
 ```
 
 ## Examples

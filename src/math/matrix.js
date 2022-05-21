@@ -10,7 +10,7 @@ module.exports = class Matrix {
         this.columns = columns;
 
         if (entries instanceof Float64Array) return (this.entries = entries, this);
-        
+
         const bytes = Float64Array.BYTES_PER_ELEMENT * rows * columns;
         this.buffer = typeof SharedArrayBuffer !== 'undefined' ? new SharedArrayBuffer(bytes) : new ArrayBuffer(bytes);
         this.entries = new Float64Array(this.buffer);
@@ -19,7 +19,7 @@ module.exports = class Matrix {
 
     static copy(matrix) {
         if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
-        
+
         return new Matrix(matrix.rows, matrix.columns, matrix.entries.slice());
     }
 
@@ -80,7 +80,9 @@ module.exports = class Matrix {
     }
 
     multiply(matrix) {
-        this.entries = Matrix.multiply(this, matrix).entries;
+        matrix = Matrix.multiply(this, matrix);
+        this.entries = matrix.entries;
+        this.buffer = matrix.buffer;
         this.columns = matrix.columns;
 
         return this;
@@ -108,7 +110,9 @@ module.exports = class Matrix {
     }
 
     product(matrix) {
-        this.entries = Matrix.product(this, matrix).entries;
+        matrix = Matrix.product(this, matrix);
+        this.entries = matrix.entries;
+        this.buffer = matrix.buffer;
 
         return this;
     }
@@ -125,9 +129,42 @@ module.exports = class Matrix {
         return result;
     }
 
+    convolve(kernel) {
+        const matrix = Matrix.convolve(this, kernel);
+        this.entries = matrix.entries;
+        this.buffer = matrix.buffer;
+        this.rows = matrix.rows;
+        this.columns = matrix.columns;
+
+        return this;
+    }
+
+    static convolve(matrix, kernel) {
+        if (!(matrix instanceof Matrix && kernel instanceof Matrix)) throw new IllegalArgumentException('Matrix and kernel must be instances of Matrix');
+        if (matrix.rows < kernel.rows || matrix.columns < kernel.columns) throw new IllegalArgumentException('Matrix shape cannot be smaller than kernel shape');
+
+        const result = new Matrix(matrix.rows - kernel.rows + 1, matrix.columns - kernel.columns + 1);
+        for (let i = 0; i < result.rows; i++) {
+            for (let j = 0; j < result.columns; j++) {
+
+                let sum = 0;
+                for (let k = 0; k < kernel.rows; k++) {
+                    for (let l = 0; l < kernel.columns; l++) {
+                        sum += kernel.entries[k * kernel.columns + l] * matrix.entries[(i + k) * matrix.columns + (j + l)];
+                    }
+                }
+
+                result.entries[i * result.columns + j] = sum;
+            }
+        }
+
+        return result;
+    }
+
     transpose() {
         const matrix = Matrix.transpose(this);
         this.entries = matrix.entries;
+        this.buffer = matrix.buffer;
         this.rows = matrix.rows;
         this.columns = matrix.columns;
 

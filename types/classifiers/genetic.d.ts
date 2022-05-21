@@ -3,6 +3,8 @@ import { Classifier } from './classifier';
 
 export class Genetic extends Classifier {
 
+    static name = 'genetic';
+
     constructor({ shape, fitness_function, hyper_parameters, options }?: {
         shape?: number[] | {
             size: number;

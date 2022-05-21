@@ -9,11 +9,10 @@ module.exports = class Task {
     }
 
     async propagate(shared) {
-        const outputs = await Classifier.propagate({
-            input: shared.input,
-            network: shared.network.map(layer => Layer.deserialize(layer)),
-            input_size: shared.input_size
-        });
+        const outputs = await Classifier.propagate(
+            shared.input,
+            shared.network.map(layer => Layer.deserialize(layer))
+        );
 
         return outputs.map(matrix => matrix.serialize());
     }
@@ -26,14 +25,15 @@ module.exports = class Task {
     }
 
     async back_propagate(shared) {
-        const [error, network] = await Classifier.backPropagate({
-            input: shared.input,
-            target: shared.target,
-            network: shared.network.map(layer => Layer.deserialize(layer)),
-            shape: shared.shape,
-            loss_function: TYPES[shared.loss_function],
-            hyper_parameters: shared.hyper_parameters
-        });
+        const [error, network] = await Classifier.backPropagate(
+            shared.input,
+            shared.target,
+            shared.network.map(layer => Layer.deserialize(layer)),
+            {
+                loss_function: TYPES[shared.loss_function],
+                hyper_parameters: shared.hyper_parameters
+            }
+        );
 
         return [error, network.map(layer => layer.serialize())];
     }
@@ -41,6 +41,26 @@ module.exports = class Task {
     static BackPropagate(data) {
         return {
             name: 'back_propagate',
+            shared: data
+        };
+    }
+
+    async fit(shared) {
+        const [log, network] = await Classifier.fit(
+            shared.data,
+            shared.network.map(layer => Layer.deserialize(layer)),
+            {
+                loss_function: TYPES[shared.loss_function],
+                options: shared.options
+            }
+        );
+
+        return [log, network.map(layer => layer.serialize())];
+    }
+
+    static Fit(data) {
+        return {
+            name: 'fit',
             shared: data
         };
     }

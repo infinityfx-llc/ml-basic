@@ -1,3 +1,10 @@
+declare interface PreProcessor {
+    data: {
+        input: number[];
+        target: number[];
+    }[];
+}
+
 export class PreProcessor {
 
     private static inputKeys;

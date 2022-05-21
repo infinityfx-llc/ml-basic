@@ -1,4 +1,3 @@
-const IllegalArgumentException = require('../exceptions/illegal-argument');
 const Loss = require('../functions/loss');
 const SquaredLoss = require('../functions/squared-loss');
 const Layer = require('../layer');
@@ -6,10 +5,8 @@ const BatchGradientDescent = require('../optimizers/batch-gradient-descent');
 const Pool = require('../threading/pool');
 const Task = require('../threading/task');
 const { TYPES } = require('../types');
-const { pad, range, shuffle, argmax } = require('../utils');
+const { pad, argmax } = require('../utils');
 const Classifier = require('./classifier');
-
-//return log object from fitting
 
 module.exports = class Neural extends Classifier {
 
@@ -29,11 +26,7 @@ module.exports = class Neural extends Classifier {
     }
 
     async propagate(input) {
-        return await Classifier.propagate({
-            input,
-            network: this.layers,
-            input_size: this.shape.input
-        });
+        return await Classifier.propagate(input, this.layers);
     }
 
     async predict(input) {
@@ -41,8 +34,7 @@ module.exports = class Neural extends Classifier {
             await this.pool.queue(
                 Task.Propagate({
                     input,
-                    network: this.layers.map(layer => layer.serialize()),
-                    input_size: this.shape.input
+                    network: this.layers.map(layer => layer.serialize())
                 })
             ) :
             await this.propagate(input);
@@ -67,21 +59,18 @@ module.exports = class Neural extends Classifier {
                 input,
                 target,
                 network: this.layers.map(layer => layer.serialize()),
-                shape: {
-                    input: this.shape.input,
-                    output: this.shape.output
-                },
                 loss_function: this.loss.serialize(),
                 hyper_parameters
             })) :
-            await Classifier.backPropagate({
+            await Classifier.backPropagate(
                 input,
                 target,
-                network: this.layers,
-                shape: this.shape,
-                loss_function: this.loss,
-                hyper_parameters
-            });
+                this.layers,
+                {
+                    loss_function: this.loss,
+                    hyper_parameters
+                }
+            );
 
         if (this.multithreading) this.layers = network.map(layer => Layer.deserialize(layer));
 
@@ -94,29 +83,37 @@ module.exports = class Neural extends Classifier {
     }
 
     async fit(data, { max_epochs = 1, error_threshold = 0, iterative = false, hyper_parameters = {} } = {}) {
-        if (!Array.isArray(data)) throw new IllegalArgumentException('Data must be an instance of Array');
+        const [log, network] = this.multithreading ?
+            await this.pool.queue(Task.Fit({
+                data,
+                network: this.layers.map(layer => layer.serialize()),
+                loss_function: this.loss.serialize(),
+                options: {
+                    max_epochs,
+                    error_threshold,
+                    iterative,
+                    hyper_parameters
+                }
+            })) :
+            await Classifier.fit(
+                data,
+                this.layers,
+                {
+                    loss_function: this.loss,
+                    options: {
+                        max_epochs,
+                        error_threshold,
+                        iterative,
+                        hyper_parameters
+                    }
+                }
+            );
 
-        for (let i = 0; i < max_epochs; i++) {
-            const arr = shuffle(range(data.length));
+        if (this.multithreading) this.layers = network.map(layer => Layer.deserialize(layer));
+        this.error = log.error;
+        this.epochs += log.epochs;
 
-            let aggregate_error = 0;
-            for (let j = 0; j < arr.length; j++) {
-                const index = iterative ? j : arr[j];
-                const { input, target } = data[index];
-
-                if (!input || !target) throw new IllegalArgumentException('Data entry must be an Object containing input and target values');
-
-                const error = await this.backPropagate(input, target, hyper_parameters);
-                aggregate_error += error / arr.length;
-            }
-
-            this.error = aggregate_error;
-            this.epochs++;
-
-            if (this.error <= error_threshold) break;
-        }
-
-        return this.error;
+        return log;
     }
 
     async tune(data, parameters = {}, { max_epochs = 1000 } = {}) {
