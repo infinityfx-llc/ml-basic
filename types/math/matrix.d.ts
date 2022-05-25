@@ -8,6 +8,8 @@ export class Matrix {
 
     zeros(): Matrix;
 
+    ones(): Matrix;
+
     scale(n?: number): Matrix;
 
     static scale(matrix: Matrix, n: number): Matrix;
@@ -28,13 +30,29 @@ export class Matrix {
 
     static product(a: Matrix, b: Matrix): Matrix;
 
+    convolve(kernel: Matrix, stride?: number, padding?: number): Matrix;
+
+    static convolve(matrix: Matrix, kernel: Matrix, stride?: number, padding?: number): Matrix;
+
     transpose(): Matrix;
 
     static transpose(matrix: Matrix): Matrix;
 
+    flip(): Matrix;
+
+    static flip(matrix: Matrix): Matrix;
+
     transform(f: (val: number) => number): Matrix;
 
     static transform(matrix: Matrix, f: (val: number) => number): Matrix;
+
+    reshape(rows: number, columns?: number): Matrix;
+
+    static reshape(matrix: Matrix, rows: number, columns?: number): Matrix;
+
+    flat(): Matrix;
+
+    static flat(matrix: Matrix): Matrix;
 
     static identity(n: number): Matrix;
 

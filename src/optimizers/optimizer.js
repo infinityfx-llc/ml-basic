@@ -22,13 +22,10 @@ module.exports = class Optimizer {
         this.learning_rate = learning_rate;
     }
 
-    step(layer, input, gradient) {
+    step(gradient) {
         this.t++;
 
-        gradient.scale(this.learning_rate);
-        layer.bias.add(gradient);
-
-        layer.weights.add(gradient.multiply(Matrix.transpose(input)));
+        return gradient.scale(this.learning_rate);
     }
 
     serialize() {

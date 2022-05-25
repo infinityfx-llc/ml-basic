@@ -1,6 +1,7 @@
 const Exception = require('../exceptions/exception');
 const IllegalArgumentException = require('../exceptions/illegal-argument');
-const Layer = require('../layer');
+const Layer = require('../layers/layer');
+const LAYERS = require('../layers');
 const { argmin, combine } = require('../utils');
 const Classifier = require('./classifier');
 
@@ -106,7 +107,7 @@ module.exports = class Genetic extends Classifier {
     loadModel(model) {
         Object.entries(model).forEach(([key, val]) => {
             if (key === 'population') return this[key] = val.map(network => {
-                network.map(layer => Layer.deserialize(layer));
+                network.map(layer => LAYERS[layer.name].deserialize(layer));
             });
 
             this[key] = val;

@@ -18,6 +18,11 @@ module.exports = class Adam extends BatchGradientDescent {
         this.v = null;
     }
 
+    flush() {
+        this.m = null;
+        super.flush();
+    }
+
     useParameters({ learning_rate = this.learning_rate, batch_size = this.batch_size, beta1 = this.beta1, beta2 = this.beta2, epsilon = this.epsilon } = {}) {
         super.useParameters({ learning_rate, batch_size });
         if (epsilon <= 0) throw new IllegalArgumentException('Epsilon must be a number greater than 0');
@@ -27,13 +32,13 @@ module.exports = class Adam extends BatchGradientDescent {
         this.epsilon = epsilon;
     }
 
-    step(layer, input, gradient) {
+    step(gradient) {
         if (!this.m) {
             this.m = new Matrix(gradient).zeros();
             this.v = new Matrix(gradient).zeros();
         }
 
-        if (this.i % this.batch_size !== 0) return this.i++;
+        if (this.i % this.batch_size !== 0) return this.i++, null;
 
         this.m = Matrix.scale(this.m, this.beta1).add(Matrix.scale(gradient, 1 - this.beta1));
         this.v = Matrix.scale(this.v, this.beta2).add(Matrix.transform(gradient, val => val * val).scale(1 - this.beta2));
@@ -43,7 +48,7 @@ module.exports = class Adam extends BatchGradientDescent {
 
         gradient = m_hat.product(v_hat.transform(val => Math.sqrt(val)).add(this.epsilon).transform(val => 1 / val)).scale(-1);
 
-        super.step(layer, input, gradient);
+        return super.step(gradient);
     }
 
     static deserialize(data) {

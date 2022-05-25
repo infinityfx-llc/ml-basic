@@ -1,9 +1,9 @@
 const Exception = require('../exceptions/exception');
 const IllegalArgumentException = require('../exceptions/illegal-argument');
 const Loss = require('../functions/loss');
-const Sigmoid = require('../functions/sigmoid');
 const SquaredLoss = require('../functions/squared-loss');
-const Layer = require('../layer');
+const Layer = require('../layers/layer');
+const LAYERS = require('../layers');
 const Log = require('../log');
 const Matrix = require('../math/matrix');
 const BatchGradientDescent = require('../optimizers/batch-gradient-descent');
@@ -36,10 +36,33 @@ module.exports = (() => {
             this.pool = this.multithreading ? new Pool(os.cpus().length) : null;
         }
 
-        parseShape(value) {
-            if (typeof value !== 'number') return [value.size, TYPES[value.activation]];
+        parseLayer(shape, input = null) {
+            if (!input) return typeof shape !== 'number' && !Array.isArray(shape) ? shape.size : shape;
 
-            return [value, Sigmoid];
+            let {
+                type = 'fully_connected',
+                size = 1,
+                activation = 'sigmoid',
+                ...args
+            } = typeof shape !== 'number' && !Array.isArray(shape) ? shape : {};
+
+            if (typeof shape === 'number') {
+                type = 'fully_connected';
+                size = shape;
+            }
+            if (Array.isArray(shape)) {
+                type = 'convolutional';
+                kernel = shape;
+            }
+
+            if (type !== 'fully_connected') {
+                input = Array.isArray(input) ? input : (n = Math.sqrt(input), [n, n]);
+                if (!Number.isInteger(input[0])) throw new IllegalArgumentException('Layer input shape is invalid for convolutional layers');
+            } else {
+                input = 'length' in input ? input[0] * input[1] : input;
+            }
+
+            return [LAYERS[type], { input, output: size, activation: TYPES[activation], size, ...args }];
         }
 
         createNetwork(shape = [2, 1], optimizer = BatchGradientDescent.name, hyper_parameters = {}) {
@@ -48,13 +71,14 @@ module.exports = (() => {
             const network = new Array(shape.length - 1);
             const __shape = new Array(shape.length);
 
-            for (let i = 0; i < shape.length - 1; i++) {
-                const [input] = this.parseShape(shape[i]);
-                const [output, activation] = this.parseShape(shape[i + 1]);
+            let input = this.parseLayer(shape[0]);
+            for (let i = 1; i < shape.length; i++) {
+                const [layerType, args] = this.parseLayer(shape[i], input);
 
-                network[i] = new Layer(input, output, activation, TYPES[optimizer], hyper_parameters);
-                __shape[i] = input;
-                __shape[i + 1] = output;
+                network[i - 1] = new layerType({ ...args, optimizer: TYPES[optimizer], hyper_parameters });
+
+                __shape[i - 1] = input;
+                __shape[i] = input = network[i - 1].shape.output;
             }
 
             __shape.input = __shape[0];
@@ -64,11 +88,7 @@ module.exports = (() => {
         }
 
         static async propagate(input, network) {
-            if (!Array.isArray(input)) throw new IllegalArgumentException('Input must be an instance of Array');
-            const input_size = network[0].size.input;
-
-            input = pad(input, input_size);
-            let output = Matrix.fromArray(input), outputs = [output];
+            let output = network[0].shapeInput(input), outputs = [output];
 
             for (let i = 0; i < network.length; i++) {
                 if (!(network[i] instanceof Layer)) throw new IllegalArgumentException('Network must be an Array of Layers');
@@ -81,7 +101,7 @@ module.exports = (() => {
         }
 
         static async backPropagate(input, target, network, { loss_function = SquaredLoss, hyper_parameters = {} } = {}) {
-            const output_size = network[network.length - 1].size.output;
+            const output_size = network[network.length - 1].shape.output;
             if (!Array.isArray(target) || target.length !== output_size) throw new IllegalArgumentException(`Target must be an instance of Array of length ${output_size}`);
             if (!(loss_function.prototype instanceof Loss)) throw new IllegalArgumentException('Loss function must be an instance of Loss');
 

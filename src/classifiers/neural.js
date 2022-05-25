@@ -1,6 +1,8 @@
 const Loss = require('../functions/loss');
 const SquaredLoss = require('../functions/squared-loss');
-const Layer = require('../layer');
+const Layer = require('../layers/layer');
+const LAYERS = require('../layers');
+const Matrix = require('../math/matrix');
 const BatchGradientDescent = require('../optimizers/batch-gradient-descent');
 const Pool = require('../threading/pool');
 const Task = require('../threading/task');
@@ -25,6 +27,18 @@ module.exports = class Neural extends Classifier {
         this.binary = options.binary || false;
     }
 
+    static model() {
+        const model = new Neural();
+        model.layers = [];
+        model.shape = [];
+
+        return model;
+    }
+
+    add(layer) {
+
+    }
+
     async propagate(input) {
         return await Classifier.propagate(input, this.layers);
     }
@@ -33,7 +47,7 @@ module.exports = class Neural extends Classifier {
         const outputs = this.multithreading ?
             await this.pool.queue(
                 Task.Propagate({
-                    input,
+                    input: input instanceof Matrix ? input.serialize() : input,
                     network: this.layers.map(layer => layer.serialize())
                 })
             ) :
@@ -56,7 +70,7 @@ module.exports = class Neural extends Classifier {
     async backPropagate(input, target, hyper_parameters = {}) {
         const [error, network] = this.multithreading ?
             await this.pool.queue(Task.BackPropagate({
-                input,
+                input: input instanceof Matrix ? input.serialize() : input,
                 target,
                 network: this.layers.map(layer => layer.serialize()),
                 loss_function: this.loss.serialize(),
@@ -72,7 +86,7 @@ module.exports = class Neural extends Classifier {
                 }
             );
 
-        if (this.multithreading) this.layers = network.map(layer => Layer.deserialize(layer));
+        if (this.multithreading) this.layers = network.map(layer => LAYERS[layer.name].deserialize(layer));
 
         return error;
     }
@@ -85,7 +99,7 @@ module.exports = class Neural extends Classifier {
     async fit(data, { max_epochs = 1, error_threshold = 0, iterative = false, hyper_parameters = {} } = {}) {
         const [log, network] = this.multithreading ?
             await this.pool.queue(Task.Fit({
-                data,
+                data: data.map(({ input, target }) => ({ input: input instanceof Matrix ? input.serialize() : input, target })),
                 network: this.layers.map(layer => layer.serialize()),
                 loss_function: this.loss.serialize(),
                 options: {
@@ -109,7 +123,7 @@ module.exports = class Neural extends Classifier {
                 }
             );
 
-        if (this.multithreading) this.layers = network.map(layer => Layer.deserialize(layer));
+        if (this.multithreading) this.layers = network.map(layer => LAYERS[layer.name].deserialize(layer));
         this.error = log.error;
         this.epochs += log.epochs;
 
@@ -130,7 +144,7 @@ module.exports = class Neural extends Classifier {
     loadModel(model) {
         Object.entries(model).forEach(([key, val]) => {
             if (key === 'loss') return this[key] = TYPES[val];
-            if (key === 'layers') return this[key] = val.map(layer => Layer.deserialize(layer));
+            if (key === 'layers') return this[key] = val.map(layer => LAYERS[layer.name].deserialize(layer));
 
             this[key] = val;
         });

@@ -1,5 +1,6 @@
 const Classifier = require('../classifiers/classifier');
-const Layer = require('../layer');
+const LAYERS = require('../layers');
+const Matrix = require('../math/matrix');
 const { TYPES } = require('../types');
 
 module.exports = class Task {
@@ -10,8 +11,8 @@ module.exports = class Task {
 
     async propagate(shared) {
         const outputs = await Classifier.propagate(
-            shared.input,
-            shared.network.map(layer => Layer.deserialize(layer))
+            Array.isArray(shared.input) ? shared.input : Matrix.deserialize(shared.input),
+            shared.network.map(layer => LAYERS[layer.name].deserialize(layer))
         );
 
         return outputs.map(matrix => matrix.serialize());
@@ -26,9 +27,9 @@ module.exports = class Task {
 
     async back_propagate(shared) {
         const [error, network] = await Classifier.backPropagate(
-            shared.input,
+            Array.isArray(shared.input) ? shared.input : Matrix.deserialize(shared.input),
             shared.target,
-            shared.network.map(layer => Layer.deserialize(layer)),
+            shared.network.map(layer => LAYERS[layer.name].deserialize(layer)),
             {
                 loss_function: TYPES[shared.loss_function],
                 hyper_parameters: shared.hyper_parameters
@@ -47,8 +48,8 @@ module.exports = class Task {
 
     async fit(shared) {
         const [log, network] = await Classifier.fit(
-            shared.data,
-            shared.network.map(layer => Layer.deserialize(layer)),
+            shared.data.map(({ input, target }) => ({ input: Array.isArray(input) ? input : Matrix.deserialize(input), target })),
+            shared.network.map(layer => LAYERS[layer.name].deserialize(layer)),
             {
                 loss_function: TYPES[shared.loss_function],
                 options: shared.options

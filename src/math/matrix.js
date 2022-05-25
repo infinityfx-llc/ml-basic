@@ -129,8 +129,8 @@ module.exports = class Matrix {
         return result;
     }
 
-    convolve(kernel) {
-        const matrix = Matrix.convolve(this, kernel);
+    convolve(kernel, stride = 1, padding = 0) {
+        const matrix = Matrix.convolve(this, kernel, stride, padding);
         this.entries = matrix.entries;
         this.buffer = matrix.buffer;
         this.rows = matrix.rows;
@@ -139,18 +139,29 @@ module.exports = class Matrix {
         return this;
     }
 
-    static convolve(matrix, kernel) {
+    static convolve(matrix, kernel, stride = 1, padding = 0) {
+        if (stride < 1 || !Number.isInteger(stride)) throw new IllegalArgumentException('Stride must be an integer larger than 0');
+        if (padding < 0 || !Number.isInteger(padding)) throw new IllegalArgumentException('Padding must be an non-negative integer');
         if (!(matrix instanceof Matrix && kernel instanceof Matrix)) throw new IllegalArgumentException('Matrix and kernel must be instances of Matrix');
-        if (matrix.rows < kernel.rows || matrix.columns < kernel.columns) throw new IllegalArgumentException('Matrix shape cannot be smaller than kernel shape');
+        if (matrix.rows + padding < kernel.rows || matrix.columns + padding < kernel.columns) throw new IllegalArgumentException('Matrix shape cannot be smaller than kernel shape');
 
-        const result = new Matrix(matrix.rows - kernel.rows + 1, matrix.columns - kernel.columns + 1);
+        const rows = (matrix.rows + padding * 2 - kernel.rows) / stride + 1,
+            cols = (matrix.columns + padding * 2 - kernel.columns) / stride + 1;
+
+        const result = new Matrix(Math.ceil(rows), Math.ceil(cols));
         for (let i = 0; i < result.rows; i++) {
             for (let j = 0; j < result.columns; j++) {
 
                 let sum = 0;
                 for (let k = 0; k < kernel.rows; k++) {
                     for (let l = 0; l < kernel.columns; l++) {
-                        sum += kernel.entries[k * kernel.columns + l] * matrix.entries[(i + k) * matrix.columns + (j + l)];
+                        const rowIdx = i - padding > rows ? i - padding - 1 : i - padding,
+                            colIdx = j - padding > cols ? j - padding - 1 : j - padding;
+
+                        let index = (rowIdx + k) * matrix.columns + (colIdx * stride + l);
+                        if (index < 0 || index >= matrix.entries.length) index = -1;
+
+                        sum += kernel.entries[k * kernel.columns + l] * (index < 0 ? 0 : matrix.entries[index]);
                     }
                 }
 
@@ -185,6 +196,18 @@ module.exports = class Matrix {
         return result;
     }
 
+    flip() {
+        this.entries.reverse();
+
+        return this;
+    }
+
+    static flip(matrix) {
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+
+        return new Matrix(matrix).flip();
+    }
+
     transform(f) {
         if (!(f instanceof Function)) throw new IllegalArgumentException('F must be an instance of Function');
 
@@ -197,6 +220,31 @@ module.exports = class Matrix {
         if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
 
         return new Matrix(matrix).transform(f);
+    }
+
+    reshape(rows, columns = rows) {
+        if (rows * columns !== this.entries.length) throw new IllegalArgumentException('New matrix size must be equal to previous size');
+
+        this.rows = rows;
+        this.columns = columns;
+
+        return this;
+    }
+
+    static reshape(matrix, rows, columns = rows) {
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+
+        return new Matrix(matrix).reshape(rows, columns);
+    }
+
+    flat() {
+        return this.reshape(this.entries.length, 1);
+    }
+
+    static flat(matrix) {
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+
+        return new Matrix(matrix).flat();
     }
 
     static identity(n) {

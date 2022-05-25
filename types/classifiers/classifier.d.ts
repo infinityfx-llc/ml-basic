@@ -1,7 +1,6 @@
 import { Matrix } from '../math/matrix';
-import { HyperParameters } from '../global';
-import { Layer } from '../layer';
-import { Loss } from '../global';
+import { Activation, HyperParameters, Layers, Loss } from '../global';
+import { Layer } from '../layers/layer';
 import { Log } from '../log';
 import { Pool } from '../threading/pool';
 
@@ -53,5 +52,13 @@ export namespace Classifier {
         binary?: boolean;
         labels?: string[]
     }
+
+    type Shape = (number | number[] | {
+        type?: Layers;
+        size?: number | number[];
+        activation?: Activation;
+        kernel?: number[];
+        stride?: number;
+    })[]
 
 }

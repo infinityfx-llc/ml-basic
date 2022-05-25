@@ -7,6 +7,7 @@ const SquaredLoss = require('./functions/squared-loss');
 const Optimizer = require('./optimizers/optimizer');
 const BatchGradientDescent = require('./optimizers/batch-gradient-descent');
 const Adam = require('./optimizers/adam');
+const RMSProp = require('./optimizers/rms-prop');
 
 module.exports.TYPES = {
     [Sigmoid.name]: Sigmoid,
@@ -17,5 +18,6 @@ module.exports.TYPES = {
     [SquaredLoss.name]: SquaredLoss,
     [Optimizer.name]: Optimizer,
     [BatchGradientDescent.name]: BatchGradientDescent,
+    [RMSProp.name]: RMSProp,
     [Adam.name]: Adam
 };

@@ -16,6 +16,11 @@ module.exports = class RMSProp extends BatchGradientDescent {
         this.avg = null;
     }
 
+    flush() {
+        this.avg = null;
+        super.flush();
+    }
+
     useParameters({ learning_rate = this.learning_rate, batch_size = this.batch_size, beta = this.beta, epsilon = this.epsilon } = {}) {
         super.useParameters({ learning_rate, batch_size });
         if (epsilon <= 0) throw new IllegalArgumentException('Epsilon must be a number greater than 0');
@@ -24,18 +29,18 @@ module.exports = class RMSProp extends BatchGradientDescent {
         this.epsilon = epsilon;
     }
 
-    step(layer, input, gradient) {
+    step(gradient) {
         if (!this.avg) {
             this.avg = new Matrix(gradient).ones();
         }
 
-        if (this.i % this.batch_size !== 0) return this.i++;
+        if (this.i % this.batch_size !== 0) return this.i++, null;
 
         this.avg.scale(this.beta).add(Matrix.scale(Matrix.transform(gradient, val => Math.pow(val, 2)), 1 - this.beta));
 
         gradient = gradient.product(Matrix.transform(this.avg, val => Math.sqrt(val)).add(this.epsilon).transform(val => 1 / val)).scale(-1);
 
-        super.step(layer, input, gradient);
+        return super.step(gradient);
     }
 
     static deserialize(data) {

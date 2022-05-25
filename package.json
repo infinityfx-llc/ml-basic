@@ -1,6 +1,6 @@
 {
     "name": "ml-basic",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "Lightweight, zero dependency, machine learning library",
     "license": "GPL-3.0",
     "author": "InfinityFX <contact@infinity-fx.com> (https://infinity-fx.com)",

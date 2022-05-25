@@ -1,8 +1,8 @@
 import { Classifier } from '../classifiers/classifier';
 import { Matrix } from '../math/matrix';
-import { Activation, HyperParameters, Loss, Optimizer } from '../global';
+import { HyperParameters, Loss, Optimizer } from '../global';
 import { Log } from '../log';
-import { Layer } from '../layer';
+import { Layer } from '../layers/layer';
 
 declare interface Neural implements Classifier {
     epochs: number;
@@ -19,10 +19,7 @@ export class Neural extends Classifier {
     static name = 'neural';
 
     constructor({ shape, optimizer, loss_function, hyper_parameters, options }?: { 
-        shape?: number[] | {
-            size: number;
-            activation: Activation;
-        }[];
+        shape?: Classifier.Shape;
         optimizer?: Optimizer;
         loss_function?: Loss;
         hyper_parameters?: HyperParameters;

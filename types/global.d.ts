@@ -7,6 +7,8 @@ export interface HyperParameters {
     epsilon?: number;
 }
 
+export type Layers = 'fully_connected' | 'convolutional' | 'max_pooling';
+
 export type Activation = 'sigmoid' | 'tanh' | 'elu' | 'parametric-relu' | 'softplus';
 
 export type Optimizer = 'gradient_descent' | 'batch_gradient_descent' | 'rms_prop' | 'adam';
