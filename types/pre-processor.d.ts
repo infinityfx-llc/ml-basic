@@ -3,6 +3,10 @@ declare interface PreProcessor {
         input: number[];
         target: number[];
     }[];
+
+    private labels;
+
+    private shape;
 }
 
 export class PreProcessor {
@@ -11,18 +15,22 @@ export class PreProcessor {
 
     private static targetKeys;
 
-    constructor(data: {
-        input?: number | number[];
-        target?: number | number[];
-    });
+    constructor(data: PreProcessor.Data[], target?: PreProcessor.Data[]);
+
+    private fromLabel;
+
+    private toArray;
 
     private findKey;
 
     private hash;
 
-    clean({ nullToZero, removeDuplicates }?: {
+    private trackSize;
+
+    clean({ nullToZero, removeDuplicates, allowVariableData }?: {
         nullToZero?: boolean;
         removeDuplicates?: boolean;
+        allowVariableData?: boolean;
     }): PreProcessor;
 
     normalize(min?: number, max?: number): PreProcessor;
@@ -37,5 +45,28 @@ export class PreProcessor {
         input: number[];
         target: number[];
     };
+
+    getLabels(): string[];
+
+}
+
+export namespace PreProcessor {
+
+    type Data =
+        number |
+        string |
+        [
+            number | number[],
+            number | number[] | string
+        ] |
+        {
+            input?: number | number[];
+            in?: number | number[];
+            data?: number | number[];
+            target?: number | number[] | string;
+            output?: number | number[] | string;
+            out?: number | number[] | string;
+            label?: number | number[] | string;
+        };
 
 }

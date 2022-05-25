@@ -4,21 +4,65 @@ const utils = require('./utils');
 module.exports = class PreProcessor {
 
     static inputKeys = ['data', 'input', 'in'];
-    static targetKeys = ['target', 'output', 'out'];
+    static targetKeys = ['target', 'output', 'out', 'label'];
 
-    constructor(data) {
+    constructor(data, target = null) {
         if (!Array.isArray(data)) throw new IllegalArgumentException('Data must be an instance of Array');
+        if (target && !Array.isArray(target)) throw new IllegalArgumentException('Target must be an instance of Array');
+        if (target && target.length !== data.length) throw new IllegalArgumentException('Data length must match target length');
 
-        this.data = data.map(val => {
-            val = Array.isArray(val) ? { input: val[0], target: val[1] } : val;
+        this.labels = {
+            __length: 0
+        };
+        this.shape = {
+            input: {
+                max: 0
+            },
+            target: {
+                max: 0
+            }
+        };
+
+        this.data = data.map((val, i) => {
+            if (target) {
+                const targetObject = Array.isArray(target[i]) || typeof target[i] !== 'object' ? { target: target[i] } : target[i];
+
+                val = Array.isArray(val) || typeof val !== 'object' ? { input: val } : val;
+                Object.assign(val, targetObject);
+            } else {
+                val = Array.isArray(val) ? { input: val[0], target: val[1] } : val;
+            }
+
             const input = val[this.findKey(val, PreProcessor.inputKeys)],
-                target = val[this.findKey(val, PreProcessor.targetKeys)];
+                targetOrLabel = val[this.findKey(val, PreProcessor.targetKeys)];
+
+            const isLabel = typeof targetOrLabel === 'string' && isNaN(parseFloat(targetOrLabel));
+            if (isLabel && !(targetOrLabel in this.labels)) {
+                this.labels[targetOrLabel] = this.labels.__length;
+                this.labels.__length++;
+            }
 
             return {
                 input: this.toArray(input),
-                target: this.toArray(target)
+                target: isLabel ? targetOrLabel : this.toArray(targetOrLabel)
             };
-        });
+        }).filter(val => !(typeof val.target !== 'string' && this.labels.__length));
+
+        if (this.labels.__length > 0) {
+            this.data = this.data.map(({ input, target }) => ({
+                input,
+                target: this.fromLabel(target)
+            }));
+        }
+    }
+
+    fromLabel(label) {
+        const bytes = Float64Array.BYTES_PER_ELEMENT * this.labels.__length,
+            buffer = typeof SharedArrayBuffer !== 'undefined' ? new SharedArrayBuffer(bytes) : new ArrayBuffer(bytes),
+            array = new Float64Array(buffer);
+        array[this.labels[label]] = 1;
+
+        return array;
     }
 
     toArray(value) {
@@ -50,7 +94,17 @@ module.exports = class PreProcessor {
         return hash;
     }
 
-    clean({ nullToZero = true, removeDuplicates = true } = {}) {
+    trackSize({ input, target }) {
+        input.length in this.shape.input ? this.shape.input[input.length]++ : this.shape.input[input.length] = 1;
+        let len = this.shape.input[input.length];
+        if (len > this.shape.input.max) this.shape.input.max = len, this.shape.input.key = input.length;
+
+        target.length in this.shape.target ? this.shape.target[target.length]++ : this.shape.target[target.length] = 1;
+        len = this.shape.target[target.length];
+        if (len > this.shape.target.max) this.shape.target.max = len, this.shape.target.key = target.length;
+    }
+
+    clean({ nullToZero = true, removeDuplicates = true, allowVariableData = true } = {}) {
         const map = {};
 
         this.data = this.data
@@ -58,28 +112,40 @@ module.exports = class PreProcessor {
                 if (val.input[0] === undefined || val.target[0] === undefined) return false;
 
                 const hasNaN = val.input.reduce((bool, val) => {
-                    return (nullToZero && val === null ? false : isNaN(parseFloat(val))) || bool;
+                    return (nullToZero && val === null ? bool : isNaN(parseFloat(val))) || bool;
                 }, false) ||
                     val.target.reduce((bool, val) => {
-                        return (nullToZero && val === null ? false : isNaN(parseFloat(val))) || bool;
+                        return (nullToZero && val === null ? bool : isNaN(parseFloat(val))) || bool;
                     }, false);
                 if (hasNaN) return false;
 
-                if (!removeDuplicates) return true;
+                if (!removeDuplicates) {
+                    if (!allowVariableData) this.trackSize(val);
+
+                    return true;
+                }
                 const hash = this.hash(val);
                 if (hash in map) return false;
                 map[hash] = true;
 
-                return true;
-            })
-            .map(val => {
-                if (!nullToZero) return val;
+                if (!allowVariableData) this.trackSize(val);
 
-                return {
-                    input: val.input.map(val => (val === null ? 0 : val)),
-                    target: val.target.map(val => (val === null ? 0 : val))
-                };
+                return true;
             });
+
+        if (nullToZero) this.data = this.data.map(val => {
+            if (!nullToZero) return val;
+
+            return {
+                input: val.input.map(val => (val === null ? 0 : val)),
+                target: val.target.map(val => (val === null ? 0 : val))
+            };
+        });
+
+        if (!allowVariableData) this.data = this.data.filter(val => {
+            return val.input.length === this.shape.input.key &&
+                val.target.length === this.shape.target.key
+        });
 
         return this;
     }
@@ -123,6 +189,13 @@ module.exports = class PreProcessor {
 
     out() {
         return this.data;
+    }
+
+    getLabels() {
+        const labels = new Array(this.labels.__length);
+        Object.entries(this.labels).forEach(([label, i]) => label !== '__length' ? labels[i] = label : null);
+
+        return labels;
     }
 
 }
