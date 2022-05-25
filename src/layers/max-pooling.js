@@ -20,6 +20,14 @@ module.exports = class MaxPoolingLayer extends Layer {
         this.size = size;
     }
 
+    clone() {
+        const layer = super.clone(new MaxPoolingLayer());
+        layer.stride = this.stride;
+        layer.size = this.size;
+
+        return layer;
+    }
+
     shapeInput(input) {
         return this.shapeData(input, this.shape.input);
     }

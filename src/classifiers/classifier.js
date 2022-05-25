@@ -9,7 +9,7 @@ const Matrix = require('../math/matrix');
 const BatchGradientDescent = require('../optimizers/batch-gradient-descent');
 const Pool = require('../threading/pool');
 const { TYPES } = require('../types');
-const { argmin, pad, isBrowser, shuffle, range } = require('../utils');
+const { argmin, isBrowser, shuffle, range } = require('../utils');
 
 module.exports = (() => {
 

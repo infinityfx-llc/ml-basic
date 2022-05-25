@@ -21,6 +21,14 @@ module.exports = class ConvolutionalLayer extends Layer {
         this.kernel = Matrix.random(kernel[0], kernel[1], -1, 1);
     }
 
+    clone() {
+        const layer = super.clone(new ConvolutionalLayer());
+        layer.stride = this.stride;
+        layer.kernel = new Matrix(this.kernel);
+
+        return layer;
+    }
+
     flush() {
         this.kernel = Matrix.random(this.kernel.rows, this.kernel.columns, -1, 1);
         super.flush();

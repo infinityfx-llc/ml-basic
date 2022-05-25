@@ -11,6 +11,7 @@ Lightweight, zero dependency, machine learning library for use in NodeJS and bro
     - [Installation](#installation)
     - [Usage](#usage)
 - [Classifiers](#classifiers)
+    - [Layers](#layers)
 - [Pre processor](#pre-processor)
 - [Examples](#examples)
 
@@ -68,6 +69,32 @@ const result = await classifier.predict([1, 0]);
 const neuralClassifer = new MLBasic.Neural({ ... });
 
 const geneticClassifier = new MLBasic.Genetic({ ... });
+```
+
+### Layers
+
+```javascript
+// An example of how to define a classifier shape with mixed layer definitions
+
+const neuralClassifer = new MLBasic.Neural({
+    shape: [
+        [16, 16], // Input layer, 2d-dimensional data
+        { type: 'convolutional', kernel: [3, 3], stride: 1 }, // Convolutional layer
+        [3, 3], // Assumed to be convolutional layer, with a kernel of size 3x3 and stride of 1
+        { type: 'max_pooling', size: [2, 2], stride: 2 } // Max pooling layer
+        { activation: 'elu', size: 3 } // Assumed to be fully connected layer with output size 3
+    ]
+});
+
+// General layer definition in object form
+
+const layer = {
+    type: 'fully_connected' | 'convolutional' | 'max_pooling',
+    size: 3, // Can be a number or an array when defining a max pooling layer
+    kernel: [3, 3], // Only taken into account when defining a convolutional layer
+    stride: 2, // Only taken into account when defining either a convolutional or max pooling layer
+    activation: 'sigmoid' | 'tanh' | 'parametric_relu' | 'elu' | 'softplus'
+};
 ```
 
 ## Pre processor

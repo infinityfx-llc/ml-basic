@@ -21,7 +21,7 @@ module.exports = class FullyConnectedLayer extends Layer {
     }
 
     clone() {
-        const layer = super.clone();
+        const layer = super.clone(new FullyConnectedLayer());
         layer.weights = new Matrix(this.weights);
         layer.bias = new Matrix(this.bias);
 

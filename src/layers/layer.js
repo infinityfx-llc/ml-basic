@@ -1,3 +1,4 @@
+const Exception = require('../exceptions/exception');
 const IllegalArgumentException = require('../exceptions/illegal-argument');
 const Activator = require('../functions/activator');
 const Sigmoid = require('../functions/sigmoid');
@@ -22,8 +23,7 @@ module.exports = class Layer {
         this.hyper_parameters = hyper_parameters;
     }
 
-    clone() {
-        const layer = new FullyConnectedLayer();
+    clone(layer = new Layer()) {
         layer.shape = this.shape;
         layer.activation = this.activation;
         layer.optimizer = new this.optimizer.__proto__.constructor(this.hyper_parameters);
