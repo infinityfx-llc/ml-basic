@@ -10,7 +10,8 @@ module.exports = class SquaredLoss extends Loss {
     }
 
     static derivative(output, target) {
-        return Matrix.sub(target, output);
+        // return Matrix.sub(target, output);
+        return Matrix.sub(target, output).transform(val => -2 * val / target.entries.length);
     }
 
 };

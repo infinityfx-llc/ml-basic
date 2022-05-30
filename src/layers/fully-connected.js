@@ -53,9 +53,9 @@ module.exports = class FullyConnectedLayer extends Layer {
         const gradient = this.optimizer.step(Matrix.product(output, loss));
 
         if (gradient) {
-            this.bias.add(gradient);
+            this.bias.sub(gradient);
 
-            this.weights.add(gradient.multiply(Matrix.flat(input).transpose()));
+            this.weights.sub(gradient.multiply(Matrix.flat(input).transpose()));
         }
 
         return Matrix.multiply(Matrix.transpose(this.weights), loss);

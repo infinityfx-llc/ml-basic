@@ -46,7 +46,7 @@ module.exports = class Adam extends BatchGradientDescent {
         let m_hat = Matrix.scale(this.m, 1 / (1 - Math.pow(this.beta1, this.t))),
             v_hat = Matrix.scale(this.v, 1 / (1 - Math.pow(this.beta2, this.t)));
 
-        gradient = m_hat.product(v_hat.transform(val => Math.sqrt(val)).add(this.epsilon).transform(val => 1 / val)).scale(-1);
+        gradient = m_hat.product(v_hat.transform(val => Math.sqrt(val)).add(this.epsilon).transform(val => 1 / val));
 
         return super.step(gradient);
     }

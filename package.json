@@ -1,6 +1,6 @@
 {
     "name": "ml-basic",
-    "version": "1.4.2",
+    "version": "1.4.3",
     "description": "Lightweight, zero dependency, machine learning library",
     "license": "GPL-3.0",
     "author": "InfinityFX <contact@infinity-fx.com> (https://infinity-fx.com)",
@@ -11,11 +11,14 @@
     "bugs": "https://github.com/infinityfx-llc/ml-basic/issues",
     "funding": "https://ko-fi.com/infinityfx",
     "keywords": [
+        "ml",
         "machine learning",
         "neural",
         "network",
         "ai",
         "classifier",
+        "convolutional",
+        "recurrent",
         "multithreading",
         "zero dependency",
         "lightweight"

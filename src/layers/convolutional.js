@@ -55,7 +55,7 @@ module.exports = class ConvolutionalLayer extends Layer {
         const gradient = this.optimizer.step(Matrix.product(output, loss));
 
         if (gradient) {
-            this.kernel.add(Matrix.convolve(input, gradient));
+            this.kernel.sub(Matrix.convolve(input, gradient));
         }
 
         //TODO: check if stride has effect on these operations

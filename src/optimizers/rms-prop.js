@@ -38,7 +38,7 @@ module.exports = class RMSProp extends BatchGradientDescent {
 
         this.avg.scale(this.beta).add(Matrix.scale(Matrix.transform(gradient, val => Math.pow(val, 2)), 1 - this.beta));
 
-        gradient = gradient.product(Matrix.transform(this.avg, val => Math.sqrt(val)).add(this.epsilon).transform(val => 1 / val)).scale(-1);
+        gradient = gradient.product(Matrix.transform(this.avg, val => Math.sqrt(val)).add(this.epsilon).transform(val => 1 / val));
 
         return super.step(gradient);
     }

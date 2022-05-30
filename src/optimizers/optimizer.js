@@ -5,11 +5,12 @@ module.exports = class Optimizer {
 
     static name = 'gradient_descent';
 
-    constructor({ learning_rate = 0.1 } = {}) {
+    constructor({ learning_rate = 0.1, gradient_clipping = null } = {}) {
         if (learning_rate <= 0) throw new IllegalArgumentException('Learning rate must be a number greater than 0');
 
         this.t = 1;
         this.learning_rate = learning_rate;
+        this.gradient_clipping = gradient_clipping;
     }
 
     flush() {
@@ -25,7 +26,7 @@ module.exports = class Optimizer {
     step(gradient) {
         this.t++;
 
-        return gradient.scale(this.learning_rate);
+        return gradient.scale(this.learning_rate).clip(this.gradient_clipping === null ? null : -this.gradient_clipping, this.gradient_clipping);
     }
 
     serialize() {

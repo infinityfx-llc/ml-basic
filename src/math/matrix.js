@@ -247,6 +247,21 @@ module.exports = class Matrix {
         return new Matrix(matrix).flat();
     }
 
+    clip(min = 0, max = 1) {
+        for (let i = 0; i < this.entries.length; i++) {
+            if (min !== null) this.entries[i] = this.entries[i] < min ? min : this.entries[i];
+            if (max !== null) this.entries[i] = this.entries[i] > max ? max : this.entries[i];
+        }
+
+        return this;
+    }
+
+    static clip(matrix, min = 0, max = 1) {
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+
+        return new Matrix(matrix).clip(min, max);
+    }
+
     static identity(n) {
         const matrix = new Matrix(n);
 
