@@ -8,6 +8,8 @@ const Optimizer = require('../optimizers/optimizer');
 const { TYPES } = require('../types');
 const { pad } = require('../utils');
 
+// recurrent layer
+
 module.exports = class Layer {
 
     static name = 'identity';
@@ -15,8 +17,8 @@ module.exports = class Layer {
     constructor(activation = Sigmoid, optimizer = BatchGradientDescent, hyper_parameters = {}) {
         if (this.constructor === Layer) throw new Exception('Cannot instantiate abstract class Layer');
 
-        if (!(activation.prototype instanceof Activator)) throw new IllegalArgumentException('Activation must be of type Activator');
-        if (!(optimizer === Optimizer || optimizer.prototype instanceof Optimizer)) throw new IllegalArgumentException('Optimizer must be of type Optimizer');
+        if (!(activation.prototype instanceof Activator)) throw new IllegalArgumentException('`activation` must be of type Activator');
+        if (!(optimizer === Optimizer || optimizer.prototype instanceof Optimizer)) throw new IllegalArgumentException('`optimizer` must be of type Optimizer');
 
         this.activation = activation;
         this.optimizer = new optimizer(hyper_parameters);
@@ -51,6 +53,13 @@ module.exports = class Layer {
 
         return data.reshape(...shape);
     }
+
+    // COMING SOON
+    // propagate(input) {
+    //     if (!Array.isArray(input[0])) input = [input];
+
+    //     return input.map(input => this.propagate(input)).filter(val => val !== null);
+    // }
 
     static cross(a, b) {
         if (!(a instanceof Layer && a.__proto__.constructor === b.__proto__.constructor)) throw new IllegalArgumentException('A and b must be an instance of Layer');

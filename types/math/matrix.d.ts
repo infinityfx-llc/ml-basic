@@ -54,6 +54,10 @@ export class Matrix {
 
     static flat(matrix: Matrix): Matrix;
 
+    clip(min?: number, max?: number): Matrix;
+
+    static clip(matrix: Matrix, min?: number, max?: number): Matrix;
+
     static identity(n: number): Matrix;
 
     static random(rows: number, columns?: number, min?: number, max?: number, decimals?: number): Matrix;

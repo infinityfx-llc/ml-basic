@@ -2,6 +2,7 @@ const Neural = require('../classifiers/neural');
 const Genetic = require('../classifiers/genetic');
 const IllegalArgumentException = require('../exceptions/illegal-argument');
 const { isBrowser } = require('../utils');
+const Exception = require('../exceptions/exception');
 
 module.exports = (() => {
     const fs = isBrowser() ? {} : require('fs');
@@ -13,7 +14,7 @@ module.exports = (() => {
 
     return isBrowser() ?
         async (file) => {
-            if (!(file instanceof Blob)) throw new IllegalArgumentException('File must be an instance of File');
+            if (!(file instanceof Blob)) throw new IllegalArgumentException('`file` must be an instance of File');
 
             return new Promise((resolve, reject) => {
                 let reader = new FileReader();
@@ -23,7 +24,7 @@ module.exports = (() => {
 
                     resolve(classifier);
                 };
-                reader.onerror = () => reject(new IllegalArgumentException('File must be an instance of File'));
+                reader.onerror = () => reject(new IllegalArgumentException('`file` must be an instance of File'));
                 reader.readAsText(file);
             });
         } :

@@ -17,7 +17,7 @@ module.exports = class Genetic extends Classifier {
 
         this.candidate_threshold = hyper_parameters.candidate_threshold || 0.1;
         if (fitness_function) {
-            if (!(fitness_function instanceof Function)) throw new IllegalArgumentException('Fitness function must be an instance of Function');
+            if (!(fitness_function instanceof Function)) throw new IllegalArgumentException('`fitness_function` must be an instance of Function');
             this.fitness = fitness_function;
         }
 
@@ -41,7 +41,7 @@ module.exports = class Genetic extends Classifier {
     }
 
     async fitness() {
-        throw new Exception('Please define a fitness function');
+        throw new Exception('`fitness_function` is undefined');
     }
 
     flush() {

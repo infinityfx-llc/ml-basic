@@ -10,6 +10,7 @@ const BatchGradientDescent = require('../optimizers/batch-gradient-descent');
 const Pool = require('../threading/pool');
 const { TYPES } = require('../types');
 const { argmin, isBrowser, shuffle, range } = require('../utils');
+const RecurrentLayer = require('../layers/recurrent');
 
 module.exports = (() => {
 
@@ -34,6 +35,7 @@ module.exports = (() => {
             }
 
             this.pool = this.multithreading ? new Pool(os.cpus().length) : null;
+            this.compiled = true;
         }
 
         parseLayer(shape, input = null) {
@@ -59,14 +61,50 @@ module.exports = (() => {
                 input = Array.isArray(input) ? input : (n = Math.sqrt(input), [n, n]);
                 if (!Number.isInteger(input[0])) throw new IllegalArgumentException('Layer input shape is invalid for convolutional layers');
             } else {
-                input = 'length' in input ? input[0] * input[1] : input;
+                input = Array.isArray(input) ? input[0] * input[1] : input;
             }
 
             return [LAYERS[type], { input, output: size, activation: TYPES[activation], size, ...args }];
         }
 
+        isValidNetwork(network) {
+            if (!Array.isArray(network)) return false;
+
+            let previous, shape = [];
+            for (const layer of network) {
+                if (!(layer instanceof Layer)) return false;
+
+                const input = layer instanceof RecurrentLayer ?
+                    layer.shape.input[0] :
+                    Array.isArray(layer.shape.input) ?
+                        layer.shape.input[0] * layer.shape.input[1] :
+                        layer.shape.input;
+
+                const output = layer instanceof RecurrentLayer ?
+                    layer.shape.output[0] :
+                    Array.isArray(layer.shape.output) ?
+                        layer.shape.output[0] * layer.shape.output[1] :
+                        layer.shape.output;
+
+                if (!previous) {
+                    previous = output;
+                    shape.push(layer.shape.input);
+                    continue;
+                }
+
+                if (previous !== input) return false;
+                previous = input;
+                shape.push(layer.shape.input);
+            }
+            shape.push(network[network.length - 1].shape.output);
+            shape.input = shape[0];
+            shape.output = shape[shape.length - 1];
+
+            return shape;
+        }
+
         createNetwork(shape = [2, 1], optimizer = BatchGradientDescent.name, hyper_parameters = {}) {
-            if (shape.length < 2) throw new IllegalArgumentException('Shape has to be an instance of Array with at least 2 values');
+            if (!Array.isArray(shape) || shape.length < 2) throw new IllegalArgumentException('`shape` must be an instance of Array with at least 2 values');
 
             const network = new Array(shape.length - 1);
             const __shape = new Array(shape.length);
@@ -91,7 +129,7 @@ module.exports = (() => {
             let output = network[0].shapeInput(input), outputs = [output];
 
             for (let i = 0; i < network.length; i++) {
-                if (!(network[i] instanceof Layer)) throw new IllegalArgumentException('Network must be an Array of Layers');
+                if (!(network[i] instanceof Layer)) throw new IllegalArgumentException('`network` must be an Array of Layers');
 
                 output = network[i].propagate(output);
                 outputs.push(output);
@@ -102,8 +140,8 @@ module.exports = (() => {
 
         static async backPropagate(input, target, network, { loss_function = SquaredLoss, hyper_parameters = {} } = {}) {
             const output_size = network[network.length - 1].shape.output;
-            if (!Array.isArray(target) || target.length !== output_size) throw new IllegalArgumentException(`Target must be an instance of Array of length ${output_size}`);
-            if (!(loss_function.prototype instanceof Loss)) throw new IllegalArgumentException('Loss function must be an instance of Loss');
+            if (!Array.isArray(target) || target.length !== output_size) throw new IllegalArgumentException(`\`target\` must be an instance of Array of length ${output_size}`);
+            if (!(loss_function.prototype instanceof Loss)) throw new IllegalArgumentException('`loss_function` must be an instance of Loss');
 
             target = Matrix.fromArray(target);
             const outputs = await this.propagate(input, network);
@@ -126,7 +164,7 @@ module.exports = (() => {
                 iterative = false,
                 hyper_parameters = {}
             } = options;
-            if (!Array.isArray(data)) throw new IllegalArgumentException('Data must be an instance of Array');
+            if (!Array.isArray(data)) throw new IllegalArgumentException('`data` must be an instance of Array');
 
             const log = new Log();
 
@@ -138,7 +176,7 @@ module.exports = (() => {
                     const index = iterative ? j : arr[j];
                     const { input, target } = data[index];
 
-                    if (!input || !target) throw new IllegalArgumentException('Data entry must be an Object containing input and target values');
+                    if (!input || !target) throw new IllegalArgumentException('`data` entry is missing an `input` or `target` key and value');
 
                     const [error] = await this.backPropagate(input, target, network, { loss_function, hyper_parameters });
                     aggregate_error += error / arr.length;
@@ -160,7 +198,7 @@ module.exports = (() => {
         async tune(iteration_function, parameters = {}) {
             const entries = Object.entries(parameters);
             const size = entries.reduce((s, [_, arr]) => {
-                if (!Array.isArray(arr)) throw new IllegalArgumentException('Parameter entry must be an instance of Array');
+                if (!Array.isArray(arr)) throw new IllegalArgumentException('`parameters` entry must be an instance of Array');
                 return s ? s * arr.length : arr.length;
             }, null);
             const validation_matrix = new Array(size).fill(0);

@@ -6,9 +6,9 @@ module.exports = class Adam extends BatchGradientDescent {
 
     static name = 'adam';
 
-    constructor({ learning_rate = 0.01, batch_size = 8, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8 } = {}) {
+    constructor({ learning_rate = 0.01, batch_size = 4, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8 } = {}) {
         super({ learning_rate, batch_size });
-        if (epsilon <= 0) throw new IllegalArgumentException('Epsilon must be a number greater than 0');
+        if (epsilon <= 0) throw new IllegalArgumentException('`epsilon` must be a number greater than 0');
 
         this.beta1 = beta1;
         this.beta2 = beta2;
@@ -25,7 +25,7 @@ module.exports = class Adam extends BatchGradientDescent {
 
     useParameters({ learning_rate = this.learning_rate, batch_size = this.batch_size, beta1 = this.beta1, beta2 = this.beta2, epsilon = this.epsilon } = {}) {
         super.useParameters({ learning_rate, batch_size });
-        if (epsilon <= 0) throw new IllegalArgumentException('Epsilon must be a number greater than 0');
+        if (epsilon <= 0) throw new IllegalArgumentException('`epsilon` must be a number greater than 0');
         
         this.beta1 = beta1;
         this.beta2 = beta2;

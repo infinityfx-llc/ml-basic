@@ -1,7 +1,8 @@
-module.exports = class Exception {
+module.exports = class Exception extends Error {
 
     constructor(message) {
-        this.message = message;
+        super(message);
+        this.name = 'Exception';
     }
 
 };

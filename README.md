@@ -97,6 +97,7 @@ const log = await classifier.fit(data);
 ### Classifiers
 
 #### Neural classifier
+Most common type of classifier which operates on a single network of layers. The classifier converges using back propagation through the network, based on training data.
 
 ```javascript
 // All arguments listed below are optional
@@ -111,6 +112,7 @@ const neuralClassifer = new MLBasic.Neural({
 ```
 
 #### Genetic classifier
+Classifier based on genetic evolution. The classifier mantains a population of networks which evolve and mutate over time. Convergance is reached based on user defined fitness function which chooses which candidates get to  cross to form a new generation.
 
 ```javascript
 const geneticClassifier = new MLBasic.Genetic({ ... });
@@ -241,15 +243,34 @@ const shape = [
     {
         learning_rate: 0.1,
         gradient_clipping: null,
-        batch_size: 6
+        batch_size: 8
     }
     ```
 
 - #### Adam
-    Docs to be added.
+    Optional hyper parameters, default values are as displayed:
+    ```javascript
+    {
+        learning_rate: 0.01,
+        gradient_clipping: null,
+        batch_size: 4,
+        beta1: 0.9,
+        beta2: 0.999,
+        epsilon: 1e-8
+    }
+    ```
 
 - #### RMSProp
-    Docs to be added.
+    Optional hyper parameters, default values are as displayed:
+    ```javascript
+    {
+        learning_rate: 0.01,
+        gradient_clipping: null,
+        batch_size: 4,
+        beta: 0.9,
+        epsilon: 1e-8
+    }
+    ```
 
 ## Functions
 
@@ -273,9 +294,30 @@ const shape = [
 
 ### Format
 
-Docs to be added.
+#### Input data
+All classifiers expect an `Array` of numbers as input data, even if a classifier has a higher dimensional input shape input data must be a 1-dimensional `Array`. The classifier itself takes care of reshaping the data to fit the right dimensions. If you want to use other primitive data types, such as `String`, you are expected to first process this data into a number format.
+
+#### Training data
+All classifiers expect an `Array` of objects containing an `input` and `target` key. These `input` and `target` values are expected to be an `Array` of numbers. Again if your data is not in this format a `PreProcessor` can be used to format the data.
+
+```javascript
+const data = [
+    {
+        input: [ ... ],
+        target: [ ... ]
+    },
+    ...
+];
+```
 
 ### Pre processing
+Using the `PreProcessor` class you are able to format, clean and normalize training data. The `PreProcessor` allows you to load various data formats, including from a file.
+
+```javascript
+const processor = new MLBasic.PreProcessor();
+```
+
+The example below ingests raw data that is formatted using only arrays, cleans and normalizes it, before outputting it.
 
 ```javascript
 const rawData = [
@@ -284,17 +326,15 @@ const rawData = [
         [0.875, 5.892, 5.978, ...] // Target data
     ],
     ...
-]
+];
 
-// Create a pre processor to convert, clean and normalize raw data.
+preProcessor.clean({ 
+    nullToZero: true, // nullToZero (default = true)
+    removeDuplicates: true, // removeDuplicates (default = true)
+    allowVariableData: false // removeDuplicates (default = true)
+});
 
-const preProcessor = new MLBasic.PreProcessor(rawData);
-
-// Clean the data by removing undefined, inconsistent or redundant values.
-
-preProcessor.clean({ nullToZero: true, removeDuplicates: true }); // nullToZero (default = true), removeDuplicates (default = true)
-
-preProcessor.normalize(0, 1); // min = 0 (default = 0), max = 1 (default = 1)
+preProcessor.normalize(0, 1); // min (default = 0), max (default = 1)
 
 const data = preProcessor.out();
 

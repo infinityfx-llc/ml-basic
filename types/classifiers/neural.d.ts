@@ -26,6 +26,17 @@ export class Neural extends Classifier {
         options?: Classifier.Options;
     });
 
+    static model(): Neural;
+
+    add(layer: Layer): Neural;
+
+    setLoss(loss_function?: Loss): Neural;
+
+    compile({ binary, labels }?: {
+        binary: boolean;
+        labels: string[];
+    }): Neural;
+
     propagate(input: number[]): Promise<Matrix[]>;
 
     predict(input: number[]): Promise<number[]> | {

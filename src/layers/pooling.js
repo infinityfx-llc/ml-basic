@@ -1,4 +1,5 @@
 const Exception = require('../exceptions/exception');
+const IllegalArgumentException = require('../exceptions/illegal-argument');
 const Sigmoid = require('../functions/sigmoid');
 const Matrix = require('../math/matrix');
 const Layer = require('./layer');
@@ -10,6 +11,10 @@ module.exports = class PoolingLayer extends Layer {
     constructor({ input = [8, 8], size = [2, 2], stride = 2, activation = Sigmoid } = {}) {
         super(activation);
         if (this.constructor === PoolingLayer) throw new Exception('Cannot instantiate abstract class PoolingLayer');
+
+        if (!Array.isArray(input) || input[0] < 1 || input[1] < 1 || !Number.isInteger(input[0]) || !Number.isInteger(input[1])) throw new IllegalArgumentException('`input` must be an Array of integers greater than 0');
+        if (!Array.isArray(size) || size[0] < 1 || size[1] < 1 || !Number.isInteger(size[0]) || !Number.isInteger(size[1])) throw new IllegalArgumentException('`size` must be an Array of integers greater than 0');
+        if (stride < 1 || !Number.isInteger(stride)) throw new IllegalArgumentException('`stride` must be an integer greater than 0');
 
         this.shape = {
             input,

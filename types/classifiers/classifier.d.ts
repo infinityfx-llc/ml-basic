@@ -7,13 +7,16 @@ import { Pool } from '../threading/pool';
 declare interface Classifier {
     multithreading: boolean;
     pool: Pool | null;
+    compiled: boolean;
 }
 
 export abstract class Classifier {
 
     constructor(multithreaded?: boolean);
 
-    private parseShape;
+    private parseLayer;
+
+    private isValidNetwork;
 
     private createNetwork;
 

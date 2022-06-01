@@ -6,9 +6,9 @@ module.exports = class RMSProp extends BatchGradientDescent {
 
     static name = 'rms_prop';
 
-    constructor({ learning_rate = 0.01, batch_size = 8, beta = 0.9, epsilon = 1e-8 } = {}) {
+    constructor({ learning_rate = 0.01, batch_size = 4, beta = 0.9, epsilon = 1e-8 } = {}) {
         super({ learning_rate, batch_size });
-        if (epsilon <= 0) throw new IllegalArgumentException('Epsilon must be a number greater than 0');
+        if (epsilon <= 0) throw new IllegalArgumentException('`epsilon` must be a number greater than 0');
 
         this.beta = beta;
         this.epsilon = epsilon;
@@ -23,7 +23,7 @@ module.exports = class RMSProp extends BatchGradientDescent {
 
     useParameters({ learning_rate = this.learning_rate, batch_size = this.batch_size, beta = this.beta, epsilon = this.epsilon } = {}) {
         super.useParameters({ learning_rate, batch_size });
-        if (epsilon <= 0) throw new IllegalArgumentException('Epsilon must be a number greater than 0');
+        if (epsilon <= 0) throw new IllegalArgumentException('`epsilon` must be a number greater than 0');
         
         this.beta = beta;
         this.epsilon = epsilon;

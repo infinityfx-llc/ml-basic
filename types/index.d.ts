@@ -15,3 +15,7 @@ export const layers = {
     fully_connected: FullyConnectedLayer,
     convolutional: ConvolutionalLayer
 }
+
+export const functions = {
+    loss: object
+}

@@ -28,7 +28,7 @@ module.exports = (() => {
 
         set(attributes = {}) {
             Object.entries(attributes).forEach(([key, val]) => {
-                if (key === 'elapsed' || key === 'entries') throw new IllegalArgumentException(`${key} is a reserverd argument`);
+                if (key === 'elapsed' || key === 'entries') throw new IllegalArgumentException(`\`${key}\` is a reserverd argument`);
 
                 this[key] = val;
             });
@@ -38,7 +38,7 @@ module.exports = (() => {
 
         increment(attributes = {}) {
             Object.entries(attributes).forEach(([key, val]) => {
-                if (key === 'elapsed' || key === 'entries') throw new IllegalArgumentException(`${key} is a reserverd argument`);
+                if (key === 'elapsed' || key === 'entries') throw new IllegalArgumentException(`\`${key}\` is a reserverd argument`);
 
                 key in this ? this[key] += val : this[key] = val;
             });

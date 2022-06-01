@@ -23,19 +23,21 @@ export class FullyConnectedLayer extends Layer {
         hyper_parameters?: HyperParameters;
     });
 
+    clone(): FullyConnectedLayer;
+
     shapeInput(data: number[] | Matrix): Matrix;
 
     propagate(input: Matrix): Matrix;
 
     backPropagate(input: Matrix, output: Matrix, loss: Matrix, hyper_parameters: HyperParameters): Matrix;
 
-    cross(b: Layer): Layer;
+    cross(b: Layer): FullyConnectedLayer;
 
     mutate({ mutation_probability, mutation_constant }?: {
         mutation_probability?: number;
         mutation_constant?: number;
     }): void;
 
-    static deserialize(data: object): Layer;
+    static deserialize(data: object): FullyConnectedLayer;
 
 }

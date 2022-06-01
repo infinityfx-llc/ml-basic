@@ -10,7 +10,7 @@ module.exports = class FullyConnectedLayer extends Layer {
 
     constructor({ input = 2, output = 1, activation = Sigmoid, optimizer = BatchGradientDescent, hyper_parameters = {} } = {}) {
         super(activation, optimizer, hyper_parameters);
-        if (input < 1 || output < 1 || !Number.isInteger(input) || !Number.isInteger(output)) throw new IllegalArgumentException('Input and output must be integers greater than 0');
+        if (input < 1 || output < 1 || !Number.isInteger(input) || !Number.isInteger(output)) throw new IllegalArgumentException('`input` and `output` must be integers greater than 0');
 
         this.shape = {
             input,

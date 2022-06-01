@@ -1,3 +1,4 @@
+const Exception = require('../exceptions/exception');
 const { isBrowser } = require('../utils');
 
 module.exports = (() => {
@@ -43,7 +44,7 @@ module.exports = (() => {
                 worker.onerror = onerror;
             } else {
                 worker.on('error', onerror);
-                worker.on('exit', code => code !== 0 ? onerror(new Error(`Exited with code ${code}`)) : null);
+                worker.on('exit', code => code !== 0 ? onerror(new Exception(`Exited with code ${code}`)) : null);
             }
 
             this.available.push(worker);

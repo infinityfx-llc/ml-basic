@@ -15,7 +15,17 @@ export class PreProcessor {
 
     private static targetKeys;
 
-    constructor(data: PreProcessor.Data[], target?: PreProcessor.Data[]);
+    constructor();
+
+    load(dataOrPath: string | PreProcessor.Data[], target?: PreProcessor.Data[]): Promise<PreProcessor>;
+
+    private dataFromFile;
+
+    loadCSV(pathOrFile: string | File): Promise<PreProcessor>;
+
+    loadJSON(pathOrFile: string | File): Promise<PreProcessor>;
+
+    ingest(data: PreProcessor.Data[], target?: PreProcessor.Data[]): PreProcessor;
 
     private fromLabel;
 

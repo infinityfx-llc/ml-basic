@@ -8,7 +8,7 @@ module.exports = class BatchGradientDescent extends Optimizer {
 
     constructor({ learning_rate = 0.1, batch_size = 8 } = {}) {
         super({ learning_rate });
-        if (batch_size <= 0 || !Number.isInteger(batch_size)) throw new IllegalArgumentException('Batch size must be an Integer greater than 0');
+        if (batch_size <= 0 || !Number.isInteger(batch_size)) throw new IllegalArgumentException('`batch_size` must be an Integer greater than 0');
 
         this.i = 0;
         this.batch_size = batch_size;
@@ -23,7 +23,7 @@ module.exports = class BatchGradientDescent extends Optimizer {
 
     useParameters({ learning_rate = this.learning_rate, batch_size = this.batch_size } = {}) {
         super.useParameters({ learning_rate });
-        if (batch_size <= 0 || !Number.isInteger(batch_size)) throw new IllegalArgumentException('Batch size must be an Integer greater than 0');
+        if (batch_size <= 0 || !Number.isInteger(batch_size)) throw new IllegalArgumentException('`batch_size` must be an Integer greater than 0');
         
         this.batch_size = batch_size;
     }

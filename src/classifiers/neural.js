@@ -9,6 +9,10 @@ const Task = require('../threading/task');
 const { TYPES } = require('../types');
 const { pad, argmax } = require('../utils');
 const Classifier = require('./classifier');
+const IllegalArgumentException = require('../exceptions/illegal-argument');
+const Exception = require('../exceptions/exception');
+
+// flatten layer sizes for classifier shape (NO 2D arrays)
 
 module.exports = class Neural extends Classifier {
 
@@ -31,12 +35,39 @@ module.exports = class Neural extends Classifier {
         const model = new Neural();
         model.layers = [];
         model.shape = [];
+        model.loss = null;
+        model.compiled = false;
 
         return model;
     }
 
     add(layer) {
+        if (!(layer instanceof Layer)) throw new IllegalArgumentException('`layer` must be instance of Layer');
 
+        this.layers.push(layer);
+
+        return this;
+    }
+
+    setLoss(loss_function = SquaredLoss) {
+        if (!(loss_function.prototype instanceof Loss)) throw new IllegalArgumentException('`loss_function` must be of type Loss');
+        this.loss = loss_function;
+
+        return this;
+    }
+
+    compile({ binary = false, labels = null } = {}) {
+        if (this.compiled) return;
+
+        if (!this.loss) throw new Exception('Unable to compile model using an undefined `loss_function`');
+        this.shape = this.isValidNetwork(this.layers);
+        if (!this.shape) throw new Exception('Unable to compile model using invalid layer shapes');
+
+        this.labels = binary ? pad(labels, this.shape.output) : null;
+        this.binary = binary;
+
+        this.compiled = true;
+        return this;
     }
 
     async propagate(input) {

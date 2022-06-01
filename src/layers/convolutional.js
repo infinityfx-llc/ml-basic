@@ -1,3 +1,4 @@
+const IllegalArgumentException = require('../exceptions/illegal-argument');
 const Sigmoid = require('../functions/sigmoid');
 const Matrix = require('../math/matrix');
 const BatchGradientDescent = require('../optimizers/batch-gradient-descent');
@@ -9,6 +10,9 @@ module.exports = class ConvolutionalLayer extends Layer {
 
     constructor({ input = [8, 8], kernel = [5, 5], stride = 1, activation = Sigmoid, optimizer = BatchGradientDescent, hyper_parameters = {} } = {}) {
         super(activation, optimizer, hyper_parameters);
+        if (!Array.isArray(input) || input[0] < 1 || input[1] < 1 || !Number.isInteger(input[0]) || !Number.isInteger(input[1])) throw new IllegalArgumentException('`input` must be an Array of integers greater than 0');
+        if (!Array.isArray(kernel) || kernel[0] < 1 || kernel[1] < 1 || !Number.isInteger(kernel[0]) || !Number.isInteger(kernel[1])) throw new IllegalArgumentException('`kernel` must be an Array of integers greater than 0');
+        if (stride < 1 || !Number.isInteger(stride)) throw new IllegalArgumentException('`stride` must be an integer greater than 0');
 
         this.shape = {
             input,

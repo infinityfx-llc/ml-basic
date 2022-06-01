@@ -1,12 +1,14 @@
 const IllegalArgumentException = require('../exceptions/illegal-argument');
 const Matrix = require('../math/matrix');
 
+// check if hyper parameters are of type number
+
 module.exports = class Optimizer {
 
     static name = 'gradient_descent';
 
     constructor({ learning_rate = 0.1, gradient_clipping = null } = {}) {
-        if (learning_rate <= 0) throw new IllegalArgumentException('Learning rate must be a number greater than 0');
+        if (learning_rate <= 0) throw new IllegalArgumentException('`learning_rate` must be a number greater than 0');
 
         this.t = 1;
         this.learning_rate = learning_rate;
@@ -18,7 +20,7 @@ module.exports = class Optimizer {
     }
 
     useParameters({ learning_rate = this.learning_rate } = {}) {
-        if (learning_rate <= 0) throw new IllegalArgumentException('Learning rate must be a number greater than 0');
+        if (learning_rate <= 0) throw new IllegalArgumentException('`learning_rate` must be a number greater than 0');
 
         this.learning_rate = learning_rate;
     }

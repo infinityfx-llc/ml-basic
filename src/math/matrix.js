@@ -4,7 +4,7 @@ module.exports = class Matrix {
 
     constructor(rows, columns = rows, entries = []) {
         if (rows instanceof Matrix) return Matrix.copy(rows);
-        if (rows < 1 || columns < 1) throw new IllegalArgumentException('Rows and Columns must be numbers greater than 0');
+        if (rows < 1 || columns < 1 || !Number.isInteger(rows) || !Number.isInteger(columns)) throw new IllegalArgumentException('`rows` and `columns` must be integers greater than 0');
 
         this.rows = rows;
         this.columns = columns;
@@ -18,7 +18,7 @@ module.exports = class Matrix {
     }
 
     static copy(matrix) {
-        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('`matrix` must be an instance of Matrix');
 
         return new Matrix(matrix.rows, matrix.columns, matrix.entries.slice());
     }
@@ -46,13 +46,13 @@ module.exports = class Matrix {
     }
 
     static scale(matrix, n) {
-        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('`matrix` must be an instance of Matrix');
 
         return new Matrix(matrix).scale(n);
     }
 
     add(n) {
-        if (n instanceof Matrix && !this.isEqualShape(n)) throw new IllegalArgumentException("N must be a Matrix who's shape is equal to this Matrix");
+        if (n instanceof Matrix && !this.isEqualShape(n)) throw new IllegalArgumentException('Cannot add a Matrix `n` with an unequal shape');
 
         for (let i = 0; i < this.entries.length; i++) this.entries[i] += n instanceof Matrix ? n.entries[i] : n;
 
@@ -60,13 +60,13 @@ module.exports = class Matrix {
     }
 
     static add(matrix, n) {
-        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('`matrix` must be an instance of Matrix');
 
         return new Matrix(matrix).add(n);
     }
 
     sub(n) {
-        if (n instanceof Matrix && !this.isEqualShape(n)) throw new IllegalArgumentException("N must be a Matrix who's shape is equal to this Matrix");
+        if (n instanceof Matrix && !this.isEqualShape(n)) throw new IllegalArgumentException('Cannot subtract a Matrix `n` with an unequal shape');
 
         for (let i = 0; i < this.entries.length; i++) this.entries[i] -= n instanceof Matrix ? n.entries[i] : n;
 
@@ -74,7 +74,7 @@ module.exports = class Matrix {
     }
 
     static sub(matrix, n) {
-        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('`matrix` must be an instance of Matrix');
 
         return new Matrix(matrix).sub(n);
     }
@@ -89,8 +89,8 @@ module.exports = class Matrix {
     }
 
     static multiply(a, b) {
-        if (!(a instanceof Matrix && b instanceof Matrix)) throw new IllegalArgumentException('A and b must be instances of Matrix');
-        if (a.columns !== b.rows) throw new IllegalArgumentException("A must be a Matrix who's columns are equal to the rows of a Matrix B");
+        if (!(a instanceof Matrix && b instanceof Matrix)) throw new IllegalArgumentException('`a` and `b` must be instances of Matrix');
+        if (a.columns !== b.rows) throw new IllegalArgumentException("`a` must be a Matrix who's columns are equal to the rows of a Matrix `b`");
 
         const result = new Matrix(a.rows, b.columns);
 
@@ -118,8 +118,7 @@ module.exports = class Matrix {
     }
 
     static product(a, b) {
-        if (!(a instanceof Matrix && b instanceof Matrix)) throw new IllegalArgumentException('A and b must be instances of Matrix');
-        if (!a.isEqualShape(b)) throw new IllegalArgumentException("A must be a Matrix who's shape is equal to a Matrix B");
+        if (!(a instanceof Matrix && b instanceof Matrix) || !a.isEqualShape(b)) throw new IllegalArgumentException('`a` and `b` must be instances of Matrix with equal shape');
 
         const result = new Matrix(a);
         for (let i = 0; i < a.entries.length; i++) {
@@ -140,10 +139,10 @@ module.exports = class Matrix {
     }
 
     static convolve(matrix, kernel, stride = 1, padding = 0) {
-        if (stride < 1 || !Number.isInteger(stride)) throw new IllegalArgumentException('Stride must be an integer larger than 0');
-        if (padding < 0 || !Number.isInteger(padding)) throw new IllegalArgumentException('Padding must be an non-negative integer');
-        if (!(matrix instanceof Matrix && kernel instanceof Matrix)) throw new IllegalArgumentException('Matrix and kernel must be instances of Matrix');
-        if (matrix.rows + padding < kernel.rows || matrix.columns + padding < kernel.columns) throw new IllegalArgumentException('Matrix shape cannot be smaller than kernel shape');
+        if (stride < 1 || !Number.isInteger(stride)) throw new IllegalArgumentException('`stride` must be an integer larger than 0');
+        if (padding < 0 || !Number.isInteger(padding)) throw new IllegalArgumentException('`padding` must be an non-negative integer');
+        if (!(matrix instanceof Matrix && kernel instanceof Matrix)) throw new IllegalArgumentException('`matrix` and `kernel` must be instances of Matrix');
+        if (matrix.rows + padding < kernel.rows || matrix.columns + padding < kernel.columns) throw new IllegalArgumentException('`matrix` shape cannot be smaller than `kernel` shape');
 
         const rows = (matrix.rows + padding * 2 - kernel.rows) / stride + 1,
             cols = (matrix.columns + padding * 2 - kernel.columns) / stride + 1;
@@ -183,7 +182,7 @@ module.exports = class Matrix {
     }
 
     static transpose(matrix) {
-        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('`matrix` must be an instance of Matrix');
 
         const result = new Matrix(matrix.columns, matrix.rows);
 
@@ -203,13 +202,13 @@ module.exports = class Matrix {
     }
 
     static flip(matrix) {
-        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('`matrix` must be an instance of Matrix');
 
         return new Matrix(matrix).flip();
     }
 
     transform(f) {
-        if (!(f instanceof Function)) throw new IllegalArgumentException('F must be an instance of Function');
+        if (!(f instanceof Function)) throw new IllegalArgumentException('`f` must be an instance of Function');
 
         for (let i = 0; i < this.entries.length; i++) this.entries[i] = f(this.entries[i]);
 
@@ -217,13 +216,13 @@ module.exports = class Matrix {
     }
 
     static transform(matrix, f) {
-        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('`matrix` must be an instance of Matrix');
 
         return new Matrix(matrix).transform(f);
     }
 
     reshape(rows, columns = rows) {
-        if (rows * columns !== this.entries.length) throw new IllegalArgumentException('New matrix size must be equal to previous size');
+        if (rows * columns !== this.entries.length) throw new IllegalArgumentException('New shape size must be equal to previous size');
 
         this.rows = rows;
         this.columns = columns;
@@ -232,7 +231,7 @@ module.exports = class Matrix {
     }
 
     static reshape(matrix, rows, columns = rows) {
-        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('`matrix` must be an instance of Matrix');
 
         return new Matrix(matrix).reshape(rows, columns);
     }
@@ -242,7 +241,7 @@ module.exports = class Matrix {
     }
 
     static flat(matrix) {
-        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('`matrix` must be an instance of Matrix');
 
         return new Matrix(matrix).flat();
     }
@@ -257,7 +256,7 @@ module.exports = class Matrix {
     }
 
     static clip(matrix, min = 0, max = 1) {
-        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('Matrix must be an instance of Matrix');
+        if (!(matrix instanceof Matrix)) throw new IllegalArgumentException('`matrix` must be an instance of Matrix');
 
         return new Matrix(matrix).clip(min, max);
     }
@@ -288,7 +287,7 @@ module.exports = class Matrix {
     }
 
     static fromArray(array) { //clone data
-        if (!Array.isArray(array)) throw new IllegalArgumentException('Array must be an instance of Array');
+        if (!Array.isArray(array)) throw new IllegalArgumentException('`array` must be an instance of Array');
 
         return new Matrix(array.length, 1, array);
     }
