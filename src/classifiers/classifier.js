@@ -126,16 +126,17 @@ module.exports = (() => {
         }
 
         static async propagate(input, network) {
-            let output = network[0].shapeInput(input), outputs = [output];
+            let output = input;//network[0].shapeInput(input), outputs = [output];
 
             for (let i = 0; i < network.length; i++) {
                 if (!(network[i] instanceof Layer)) throw new IllegalArgumentException('`network` must be an Array of Layers');
 
                 output = network[i].propagate(output);
-                outputs.push(output);
+                // outputs.push(output);
             }
 
-            return outputs;
+            // return outputs;
+            return output;
         }
 
         static async backPropagate(input, target, network, { loss_function = SquaredLoss, hyper_parameters = {} } = {}) {
@@ -144,14 +145,17 @@ module.exports = (() => {
             if (!(loss_function.prototype instanceof Loss)) throw new IllegalArgumentException('`loss_function` must be an instance of Loss');
 
             target = Matrix.fromArray(target);
-            const outputs = await this.propagate(input, network);
-            const output = outputs[outputs.length - 1];
+            // const outputs = await this.propagate(input, network);
+            // const output = outputs[outputs.length - 1];
+            const output = await this.propagate(input, network);
 
             let error = loss_function.mean(output, target);
-            let loss = loss_function.derivative(output, target);
+            let loss = loss_function.derivative(output, target); // GET BACK ARRAY
 
-            for (let i = outputs.length - 1; i > 0; i--) {
-                loss = network[i - 1].backPropagate(outputs[i - 1], outputs[i], loss, hyper_parameters);
+            // for (let i = outputs.length - 1; i > 0; i--) {
+            for (let i = network.length - 1; i >= 0; i--) {
+                // loss = network[i - 1].backPropagate(outputs[i - 1], outputs[i], loss, hyper_parameters);
+                loss = network[i].backPropagate(loss, hyper_parameters);
             }
 
             return [error, network];

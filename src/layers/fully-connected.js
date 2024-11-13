@@ -39,26 +39,31 @@ module.exports = class FullyConnectedLayer extends Layer {
     }
 
     propagate(input) {
-        input = Matrix.multiply(this.weights, this.shapeInput(input));
-        input.add(this.bias);
+        return super.propagate(input, function (input) {
+            this.inputs.push(this.shapeInput(input));
+            input = Matrix.multiply(this.weights, this.inputs[this.inputs.length - 1]);
+            input.add(this.bias);
 
-        return input.transform(this.activation.function);
+            return input.transform(this.activation.function);
+        }.bind(this));
     }
 
     backPropagate(input, output, loss, hyper_parameters) {
-        output.transform(this.activation.derivative).flat();
-        loss.flat();
+        return super.backPropagate(loss, function (input, output, loss) {
+            output.transform(this.activation.derivative);//.flat();
+            loss.flat();
 
-        this.optimizer.useParameters(hyper_parameters); //make temp
-        const gradient = this.optimizer.step(Matrix.product(output, loss));
+            this.optimizer.useParameters(hyper_parameters); //make temp
+            const gradient = this.optimizer.step(Matrix.product(output, loss)); // OPTIMIZER NOW NOT CORRECT INCREMENTS PER INPUT MAYBE???
 
-        if (gradient) {
-            this.bias.sub(gradient);
+            if (gradient) {
+                this.bias.sub(gradient.scale(1 / this.inputs.length));
 
-            this.weights.sub(gradient.multiply(Matrix.flat(input).transpose()));
-        }
+                this.weights.sub(gradient.multiply(Matrix.flat(input).transpose()));
+            }
 
-        return Matrix.multiply(Matrix.transpose(this.weights), loss);
+            return Matrix.multiply(Matrix.transpose(this.weights), loss);
+        }.bind(this));
     }
 
     cross(b) {

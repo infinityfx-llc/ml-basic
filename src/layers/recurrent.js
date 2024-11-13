@@ -32,36 +32,73 @@ module.exports = class RecurrentLayer extends Layer {
         return this.shapeData(input, this.shape.input[0]);
     }
 
+    // TODO: dynamic input size propagation
     propagate(input) {
         if (input.length !== this.shape.input[1]) throw new IllegalArgumentException('`input` length must be equal to layer input size');
 
-        let output = [];
+        this.inputs = [];
+        this.outputs = [];
 
         for (let i = 0; i < this.shape.input[1] + this.offset; i++) {
 
+            let partial_input;
             if (i < this.shape.input[1]) {
-                input = Matrix.multiply(this.weights, this.shapeInput(input));
-                input.add(this.bias);
+                this.inputs.push(this.shapeInput(input[i]));
+                partial_input = Matrix.multiply(this.weights, this.inputs[this.inputs.length - 1]);
+                partial_input.add(this.bias);
             }
 
             const i_hat = Matrix.multiply(this.weights, this.state);
             i_hat.add(this.bias);
-            input.add(i_hat).transform(this.activation.function);
 
-            this.state = input.clone(); //maybe don't need to clone
+            if (partial_input) i_hat.add(partial_input);
+            i_hat.transform(this.activation.function);
 
-            if (i < this.shape.input[1] - this.shape.output[1] + this.offset) continue;
+            this.state = partial_input.clone(); //maybe don't need to clone
 
-            output.push(input);
+            // if (i < this.shape.input[1] - this.shape.output[1] + this.offset) continue;
+
+            this.outputs.push(partial_input);
         }
-        
+
         this.state.zeros();
 
-        return output;
+        return this.outputs.slice(-this.shape.output[1]);
     }
 
+    // TODO: dynamic input size propagation
     backPropagate(input, output, loss, hyper_parameters) {
-        throw new Exception('Not yet implemented');
+        if (!this.outputs.length) throw new Exception();
+
+        this.optimizer.useParameters(hyper_parameters); //make temp
+
+        let b_hat, w_hat, partial_loss;
+        for (let i = this.outputs.length - 1; i >= 0; i--) {
+            const output = this.outputs[i];
+            output.transform(this.activation.derivative);//.flat();
+
+            if (this.outputs.length - i <= this.shape.output[1]) partial_loss = loss[i].flat();
+
+            if (i < this.shape.input[1]) {
+                const partial = this.optimizer.step(Matrix.product(output, partial_loss)); //Probably not correct
+                partial.scale(1 / this.shape.input[1]);
+
+                if (partial) {
+                    b_hat ? b_hat.add(partial) : b_hat = partial;
+                    partial.multiply(Matrix.flat(this.inputs[i]).transpose());
+                    w_hat ? w_hat.add(partial) : w_hat = partial;
+                }
+            }
+
+            partial_loss = Matrix.multiply(Matrix.transpose(this.weights), partial_loss);
+        }
+
+        if (b_hat && w_hat) {
+            this.bias.sub(b_hat);
+            this.weights.sub(w_hat);
+        }
+
+        return loss;
     }
 
     static deserialize(data) {

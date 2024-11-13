@@ -43,30 +43,35 @@ module.exports = class ConvolutionalLayer extends Layer {
     }
 
     propagate(input) {
-        input = Matrix.convolve(this.shapeInput(input), this.kernel, this.stride);
+        return super.propagate(input, function (input) {
+            this.inputs.push(this.shapeInput(input));
+            input = Matrix.convolve(this.inputs[this.inputs.length - 1], this.kernel, this.stride);
 
-        return input.transform(this.activation.function);
+            return input.transform(this.activation.function);
+        }.bind(this));
     }
 
     backPropagate(input, output, loss, hyper_parameters) {
-        output.transform(this.activation.derivative)
-            .reshape(...this.shape.output);
+        return super.backPropagate(loss, function (input, output, loss) {
+            output.transform(this.activation.derivative);
+            //.reshape(...this.shape.output);
 
-        input = Matrix.reshape(input, ...this.shape.input);
-        loss.reshape(...this.shape.output);
+            input = Matrix.reshape(input, ...this.shape.input);
+            loss.reshape(...this.shape.output);
 
-        this.optimizer.useParameters(hyper_parameters); //make temp
-        const gradient = this.optimizer.step(Matrix.product(output, loss));
+            this.optimizer.useParameters(hyper_parameters); //make temp
+            const gradient = this.optimizer.step(Matrix.product(output, loss));
 
-        if (gradient) {
-            this.kernel.sub(Matrix.convolve(input, gradient));
-        }
+            if (gradient) {
+                this.kernel.sub(Matrix.convolve(input, gradient).scale(1 / this.inputs.length));
+            }
 
-        //TODO: check if stride has effect on these operations
-        //TODO: implement horizontal and vertical padding
-        const padding = this.shape.input[0] - this.kernel.rows;
-        //return Matrix.transpose(this.kernel).convolve(loss, 1, padding);
-        return Matrix.flip(this.kernel).convolve(loss, 1, padding); //maybe use 180deg rotated kernel instead of transpose
+            //TODO: check if stride has effect on these operations
+            //TODO: implement horizontal and vertical padding
+            const padding = this.shape.input[0] - this.kernel.rows;
+            //return Matrix.transpose(this.kernel).convolve(loss, 1, padding);
+            return Matrix.flip(this.kernel).convolve(loss, 1, padding); //maybe use 180deg rotated kernel instead of transpose
+        }.bind(this));
     }
 
     cross(b) {

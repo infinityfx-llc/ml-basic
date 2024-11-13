@@ -40,61 +40,66 @@ module.exports = class PoolingLayer extends Layer {
     }
 
     propagate(input) {
-        input = this.shapeInput(input);
+        return super.propagate(input, function (input) {
+            input = this.shapeInput(input);
+            this.inputs.push(input);
 
-        const rows = (input.rows - this.size[0]) / this.stride + 1,
-            cols = (input.columns - this.size[1]) / this.stride + 1;
-        const result = new Matrix(...this.shape.output);
+            const rows = (input.rows - this.size[0]) / this.stride + 1,
+                cols = (input.columns - this.size[1]) / this.stride + 1;
+            const result = new Matrix(...this.shape.output);
 
-        for (let i = 0; i < result.rows; i++) {
-            for (let j = 0; j < result.columns; j++) {
+            for (let i = 0; i < result.rows; i++) {
+                for (let j = 0; j < result.columns; j++) {
 
-                let aggregate = null;
-                for (let k = 0; k < this.size[0]; k++) {
-                    for (let l = 0; l < this.size[1]; l++) {
-                        const rowIdx = i > rows ? i - 1 : i,
-                            colIdx = j > cols ? j - 1 : j;
+                    let aggregate = null;
+                    for (let k = 0; k < this.size[0]; k++) {
+                        for (let l = 0; l < this.size[1]; l++) {
+                            const rowIdx = i > rows ? i - 1 : i,
+                                colIdx = j > cols ? j - 1 : j;
 
-                        let index = (rowIdx + k) * input.columns + (colIdx * this.stride + l);
-                        aggregate = this.pool(input.entries[index], input.entries.length, aggregate);
+                            let index = (rowIdx + k) * input.columns + (colIdx * this.stride + l);
+                            aggregate = this.pool(input.entries[index], input.entries.length, aggregate);
+                        }
                     }
+
+                    result.entries[i * result.columns + j] = aggregate;
                 }
-
-                result.entries[i * result.columns + j] = aggregate;
             }
-        }
 
-        return result;//.transform(this.activation.function);
+            return result;//.transform(this.activation.function);
+        }.bind(this));
     }
 
     backPropagate(input, _, loss) {
-        input = Matrix.reshape(input, ...this.shape.input);
-        loss.reshape(...this.shape.output);
+        return super.backPropagate(loss, function (input, _, loss) {
+            input = Matrix.reshape(input, ...this.shape.input);
+            loss.reshape(...this.shape.output);
 
-        const rows = (input.rows - this.size[0]) / this.stride + 1,
-            cols = (input.columns - this.size[1]) / this.stride + 1;
-        const result = new Matrix(input.rows, input.columns);
+            const rows = (input.rows - this.size[0]) / this.stride + 1,
+                cols = (input.columns - this.size[1]) / this.stride + 1;
+            const result = new Matrix(input.rows, input.columns);
 
-        for (let i = 0; i < loss.rows; i++) {
-            for (let j = 0; j < loss.columns; j++) {
+            for (let i = 0; i < loss.rows; i++) {
+                for (let j = 0; j < loss.columns; j++) {
 
-                let aggregate, indices;
+                    let aggregate, indices;
 
-                for (let k = 0; k < this.size[0]; k++) {
-                    for (let l = 0; l < this.size[1]; l++) {
-                        const rowIdx = i > rows ? i - 1 : i,
-                            colIdx = j > cols ? j - 1 : j;
+                    for (let k = 0; k < this.size[0]; k++) {
+                        for (let l = 0; l < this.size[1]; l++) {
+                            const rowIdx = i > rows ? i - 1 : i,
+                                colIdx = j > cols ? j - 1 : j;
 
-                        let index = (rowIdx + k) * input.columns + (colIdx * this.stride + l);
-                        [aggregate, indices] = this.unpool(input.entries[index], index, aggregate, indices);
+                            let index = (rowIdx + k) * input.columns + (colIdx * this.stride + l);
+                            [aggregate, indices] = this.unpool(input.entries[index], index, aggregate, indices);
+                        }
                     }
+
+                    indices.forEach(index => result[index] = loss[i * loss.columns + j] / indices.length);
                 }
-
-                indices.forEach(index => result[index] = loss[i * loss.columns + j] / indices.length);
             }
-        }
 
-        return result;
+            return result;
+        }.bind(this));
     }
 
     cross() {
