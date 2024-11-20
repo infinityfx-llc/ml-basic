@@ -1,14 +1,15 @@
 {
     "name": "ml-basic",
-    "version": "1.5.0",
+    "version": "2.0.0",
+	"type": "module",
     "description": "Lightweight, zero dependency, machine learning library",
-    "license": "GPL-3.0",
-    "author": "InfinityFX <contact@infinity-fx.com> (https://infinity-fx.com)",
-    "main": "index.js",
-    "types": "types/index.d.ts",
+    "main": "dist/index.js",
+    "types": "dist/types/index.d.ts",
     "repository": "infinityfx-llc/ml-basic",
-    "homepage": "https://github.com/infinityfx-llc/ml-basic#readme",
+    "author": "InfinityFX <contact@infinity-fx.com> (https://infinity-fx.com)",
+    "license": "GPL-3.0",
     "bugs": "https://github.com/infinityfx-llc/ml-basic/issues",
+    "homepage": "https://github.com/infinityfx-llc/ml-basic#readme",
     "funding": "https://ko-fi.com/infinityfx",
     "keywords": [
         "ml",
@@ -23,6 +24,20 @@
         "zero dependency",
         "lightweight"
     ],
+    "scripts": {
+		"build": "rollup -c --environment NODE_ENV:production",
+		"watch": "rollup -c -w"
+	},
+    "dependencies": {
+		"tslib": "^2.8.1"
+	},
+    "devDependencies": {
+		"@rollup/plugin-terser": "^0.4.4",
+		"@rollup/plugin-typescript": "^12.1.1",
+		"rollup": "^4.26.0",
+		"rollup-plugin-delete": "^2.1.0",
+		"typescript": "^5.6.3"
+	},
     "browser": {
         "fs": false,
         "os": false,
