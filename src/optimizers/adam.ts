@@ -3,12 +3,13 @@ import GradientDescent from "./gradient-descent";
 
 export default class Adam extends GradientDescent {
 
+    name = 'Adam';
     batchSize: number;
     beta1: number;
     beta2: number;
     epsilon: number;
-    m?: Matrix;
-    v?: Matrix;
+    private m?: Matrix;
+    private v?: Matrix;
 
     constructor({
         learningRate = 0.01,

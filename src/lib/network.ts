@@ -16,6 +16,7 @@ export default class Network {
             const output = this.layers[i].output;
             const input = this.layers[i + 1].input;
 
+            // todo: auto detect input size from previous layer
             if (output[0] * output[1] !== input[0] * input[1]) throw new Error(`Layer ${i + 2}'s input does match layer ${i + 1}'s output`);
 
             this.layers[i].optimizer = optimizer.clone();
@@ -42,6 +43,10 @@ export default class Network {
         }
 
         return error;
+    }
+
+    configure(options: any) {
+        this.layers.forEach(layer => layer.optimizer.configure(options));
     }
 
 }

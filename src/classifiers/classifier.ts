@@ -14,4 +14,8 @@ export default abstract class Classifier {
         });
     }
 
+    static load() {
+        // todo
+    }
+
 }

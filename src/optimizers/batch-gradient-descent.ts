@@ -3,8 +3,9 @@ import GradientDescent from "./gradient-descent";
 
 export default class BatchGradientDescent extends GradientDescent {
 
+    name = 'BatchGradientDescent';
     batchSize: number;
-    aggregate?: Matrix;
+    private aggregate?: Matrix;
 
     constructor({
         learningRate = 0.1,

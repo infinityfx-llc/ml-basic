@@ -33,7 +33,6 @@ export default class FullyConnectedLayer extends Layer {
         output.apply(this.activation.deactivate).reshape(...this.output); // check if this reshape is really needed??
         loss.reshape(...this.output);
 
-        // this.optimizer.useParameters(hyper_parameters); //make temp
         const gradient = this.optimizer.step(output.scale(loss));
         this.bias.sub(gradient.scale(1 / (this.input[0] * this.input[1]))); // scale needed?
         this.weights.sub(gradient.mult(new Matrix(input).reshape(...this.input).transpose()));

@@ -149,8 +149,21 @@ export default class DataFrame {
         // todo
     }
 
-    split() {
-        // todo
+    split(divide = .5) {
+        const index = Math.floor(this.data.length * divide),
+            training = new DataFrame([]),
+            validation = new DataFrame([]);
+
+        training.data = this.data.slice(0, index);
+        training.labels = this.labels;
+        validation.data = this.data.slice(index);
+        validation.labels = this.labels;
+
+
+        return [
+            training,
+            validation
+        ];
     }
 
 }

@@ -3,6 +3,7 @@ import Optimizer from "./optimizer";
 
 export default class GradientDescent extends Optimizer {
 
+    name = 'GradientDescent';
     t = 0;
     learningRate: number;
     clipping: number;

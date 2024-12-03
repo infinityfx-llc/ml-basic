@@ -8,20 +8,20 @@ import BatchGradientDescent from "../optimizers/batch-gradient-descent";
 import Optimizer from "../optimizers/optimizer";
 import Classifier from "./classifier";
 
-export default class Neural extends Classifier {
+export default class Neural<O extends Optimizer> extends Classifier {
 
     epochs = 0;
     error = 1;
     network: Network;
-    optimizer: Optimizer;
+    optimizer: O;
 
     constructor({
         layers,
-        optimizer = new BatchGradientDescent(),
+        optimizer = new BatchGradientDescent() as any,
         lossFunction = new SquaredLoss()
     }: {
         layers: Layer[];
-        optimizer?: Optimizer;
+        optimizer?: O;
         lossFunction?: LossFunction;
     }) {
         super();
@@ -69,14 +69,20 @@ export default class Neural extends Classifier {
     fit({
         data,
         epochs,
-        errorThreshold = 0
+        errorThreshold = 0,
+        hyperParameters = {}
     }: {
         data: DataFrame;
         epochs: number;
         errorThreshold?: number;
+        hyperParameters?: Omit<{
+            [K in keyof O as O[K] extends Function ? never : K]?: O[K];
+        }, 'name' | 't'>;
     }) {
         const batchSize = 'batchSize' in this.optimizer ? this.optimizer.batchSize as number : 1;
         epochs = Math.ceil(epochs / batchSize) * batchSize;
+
+        this.network.configure(hyperParameters);
 
         for (let i = 0; i < epochs; i++) {
             const order = shuffle(range(data.data.length));
