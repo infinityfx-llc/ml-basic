@@ -1,3 +1,5 @@
+import { calculatePooledMatrix } from "./utils";
+
 export default class Matrix {
 
     rows: number;
@@ -159,12 +161,11 @@ export default class Matrix {
     }) {
         if (matrix.rows + zeroPadding < window[0] || matrix.columns + zeroPadding < window[1]) throw new Error('Window size exceeds Matrix shape size');
 
-        const rows = (matrix.rows + zeroPadding * 2 - window[0]) / stride + 1, // account for decimal
-            cols = (matrix.columns + zeroPadding * 2 - window[1]) / stride + 1,
+        const [rows, cols] = calculatePooledMatrix(matrix.rows, matrix.columns, window[0], stride, zeroPadding),
             pooled = new Matrix(rows, cols);
 
-        for (let i = 0; i < pooled.rows; i++) {
-            for (let j = 0; j < pooled.columns; j++) {
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
 
                 let aggregate = initial;
                 for (let k = 0; k < window[0]; k++) {
@@ -188,7 +189,7 @@ export default class Matrix {
             window: [kernel.rows, kernel.columns],
             stride,
             zeroPadding,
-            pooler: (sum, val, index) => sum + val * kernel.entries[index[0] * kernel.columns * index[1]]
+            pooler: (sum, val, index) => sum + val * kernel.entries[index[0] * kernel.columns + index[1]]
         });
     }
 

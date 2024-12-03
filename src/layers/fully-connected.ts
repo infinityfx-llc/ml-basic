@@ -30,7 +30,7 @@ export default class FullyConnectedLayer extends Layer {
     }
 
     backPropagate(input: Matrix, output: Matrix, loss: Matrix) {
-        output.apply(this.activation.deactivate);
+        output.apply(this.activation.deactivate).reshape(...this.output); // check if this reshape is really needed??
         loss.reshape(...this.output);
 
         // this.optimizer.useParameters(hyper_parameters); //make temp

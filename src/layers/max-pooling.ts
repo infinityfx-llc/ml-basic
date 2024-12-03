@@ -16,4 +16,13 @@ export default class MaxPoolingLayer extends PoolingLayer {
         });
     }
 
+    backPropagatePoolIndex(max: number, value: number, index: number, indices: number[]): number {
+        if (value > max) {
+            indices[0] = index;
+            return value;
+        }
+
+        return max;
+    }
+
 }

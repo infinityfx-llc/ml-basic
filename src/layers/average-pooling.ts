@@ -15,4 +15,10 @@ export default class AveragePoolingLayer extends PoolingLayer {
         });
     }
 
+    backPropagatePoolIndex(aggregate: number, _: number, index: number, indices: number[]): number {
+        indices.push(index);
+
+        return aggregate;
+    }
+
 }

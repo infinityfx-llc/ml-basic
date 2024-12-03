@@ -15,3 +15,10 @@ export function shuffle(array: any[]) {
 
     return array;
 }
+
+export function calculatePooledMatrix(rows: number, cols: number, kernel: number, stride: number, padding: number): [number, number] {
+    return [
+        Math.ceil((rows + padding * 2 - kernel) / stride + 1),
+        Math.ceil((cols + padding * 2 - kernel) / stride + 1)
+    ];
+}

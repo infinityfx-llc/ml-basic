@@ -5,10 +5,10 @@ import MaxPoolingLayer from "./max-pooling";
 import RecurrentLayer from "./recurrent";
 
 const Layers = {
-    apol: AveragePoolingLayer,
+    avgp: AveragePoolingLayer,
     conv: ConvolutionalLayer,
     fcon: FullyConnectedLayer,
-    mpol: MaxPoolingLayer,
+    maxp: MaxPoolingLayer,
     recu: RecurrentLayer
 }
 
