@@ -1,6 +1,33 @@
 import Matrix from "../lib/matrix";
 import GradientDescent from "./gradient-descent";
 
+export type AdamParams = {
+    /**
+     * @default 0.01
+     */
+    learningRate?: number;
+    /**
+     * @default 0
+     */
+    clipping?: number;
+    /**
+     * @default 4
+     */
+    batchSize?: number;
+    /**
+     * @default 0.9
+     */
+    beta1?: number;
+    /**
+     * @default 0.999
+     */
+    beta2?: number;
+    /**
+     * @default 1e-8
+     */
+    epsilon?: number;
+};
+
 export default class Adam extends GradientDescent {
 
     name = 'Adam';
@@ -18,7 +45,7 @@ export default class Adam extends GradientDescent {
         beta1 = 0.9,
         beta2 = 0.999,
         epsilon = 1e-8
-    } = {}) {
+    }: AdamParams = {}) {
         super({ learningRate, clipping });
 
         this.batchSize = batchSize;

@@ -16,6 +16,7 @@ export default class RecurrentLayer extends Layer {
     }: {
         input: [number, number];
         output: number;
+        // offset?
         activation?: Activator;
     }) {
         super(input, [input[0], output], activation);

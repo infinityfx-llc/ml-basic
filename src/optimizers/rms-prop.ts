@@ -1,6 +1,29 @@
 import Matrix from "../lib/matrix";
 import GradientDescent from "./gradient-descent";
 
+export type RMSPropParams = {
+    /**
+     * @default 0.01
+     */
+    learningRate?: number;
+    /**
+     * @default 0
+     */
+    clipping?: number;
+    /**
+     * @default 4
+     */
+    batchSize?: number;
+    /**
+     * @default 0.9
+     */
+    beta1?: number;
+    /**
+     * @default 1e-8
+     */
+    epsilon?: number;
+};
+
 export default class RMSProp extends GradientDescent {
 
     name = 'RMSProp';
@@ -15,7 +38,7 @@ export default class RMSProp extends GradientDescent {
         batchSize = 4,
         beta1 = 0.9,
         epsilon = 1e-8
-    } = {}) {
+    }: RMSPropParams = {}) {
         super({ learningRate, clipping });
 
         this.batchSize = batchSize;

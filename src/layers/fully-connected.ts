@@ -13,10 +13,11 @@ export default class FullyConnectedLayer extends Layer {
         output,
         activation = new Sigmoid()
     }: {
-        input: number;
+        input: number | [number, number];
         output: number;
         activation?: Activator;
     }) {
+        if (Array.isArray(input)) input = input[0] * input[1];
         super([input, 1], [output, 1], activation);
 
         this.weights = Matrix.random(output, input, -1, 1);

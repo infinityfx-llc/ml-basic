@@ -1,6 +1,21 @@
 import Matrix from "../lib/matrix";
 import GradientDescent from "./gradient-descent";
 
+export type BatchGradientDescentParams = {
+    /**
+     * @default 0.01
+     */
+    learningRate?: number;
+    /**
+     * @default 0
+     */
+    clipping?: number;
+    /**
+     * @default 8
+     */
+    batchSize?: number;
+};
+
 export default class BatchGradientDescent extends GradientDescent {
 
     name = 'BatchGradientDescent';
@@ -11,7 +26,7 @@ export default class BatchGradientDescent extends GradientDescent {
         learningRate = 0.1,
         clipping = 0,
         batchSize = 8
-    } = {}) {
+    }: BatchGradientDescentParams = {}) {
         super({ learningRate, clipping });
 
         this.batchSize = batchSize;

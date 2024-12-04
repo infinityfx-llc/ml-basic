@@ -3,23 +3,34 @@ import Optimizer from "../optimizers/optimizer";
 import { LossFunction } from "./functions";
 import Matrix from "./matrix";
 
+// todo (show actual object type):
+export type LayerArguments<T extends abstract new (...args: any) => any> = Omit<ConstructorParameters<T>[0], 'input'> & Partial<Pick<ConstructorParameters<T>[0], 'input'>>;
+
+export type LayerPreset<T extends typeof Layer = any> = {
+    layer: T;
+    args: LayerArguments<T>;
+};
+
 export default class Network {
 
     layers: Layer[];
     lossFunction: LossFunction;
 
-    constructor(layers: Layer[], optimizer: Optimizer, lossFunction: LossFunction) {
+    constructor(layers: LayerPreset[], optimizer: Optimizer, lossFunction: LossFunction) {
         this.lossFunction = lossFunction;
-        this.layers = layers;
+        this.layers = new Array(layers.length);
 
-        for (let i = 0; i < layers.length - 1; i++) {
-            const output = this.layers[i].output;
-            const input = this.layers[i + 1].input;
+        for (let i = 0; i < layers.length; i++) {
+            const output = i > 0 ? this.layers[i - 1].output : undefined;
+            const { layer, args } = layers[i];
 
-            // todo: auto detect input size from previous layer
-            if (output[0] * output[1] !== input[0] * input[1]) throw new Error(`Layer ${i + 2}'s input does match layer ${i + 1}'s output`);
+            if (!output && !('input' in args)) throw new Error(`Layer ${i + 1} has no input size defined`);
 
+            this.layers[i] = new layer(Object.assign({ input: output }, args));
             this.layers[i].optimizer = optimizer.clone();
+            const input = this.layers[i].input;
+
+            if (output && output[0] * output[1] !== input[0] * input[1]) throw new Error(`Layer ${i + 1}'s input does match layer ${i}'s output`);
         }
     }
 

@@ -1,13 +1,13 @@
-import GradientDescent from "./gradient-descent";
-import BatchGradientDescent from "./batch-gradient-descent";
-import Adam from "./adam";
-import RMSProp from "./rms-prop";
+import GradientDescent, { GradientDescentParams } from "./gradient-descent";
+import BatchGradientDescent, { BatchGradientDescentParams } from "./batch-gradient-descent";
+import Adam, { AdamParams } from "./adam";
+import RMSProp, { RMSPropParams } from "./rms-prop";
 
 const Optimizers = {
-    sgd: GradientDescent,
-    bgd: BatchGradientDescent,
-    adam: Adam,
-    rmsp: RMSProp
+    sgd: (args: GradientDescentParams) => new GradientDescent(args),
+    bgd: (args: BatchGradientDescentParams) => new BatchGradientDescent(args),
+    adam: (args: AdamParams) => new Adam(args),
+    rmsp: (args: RMSPropParams) => new RMSProp(args)
 };
 
 export default Optimizers;

@@ -1,8 +1,7 @@
-import Layer from "../layers/layer";
 import DataFrame from "../lib/data-frame";
 import { LossFunction, SquaredLoss } from "../lib/functions";
 import Matrix from "../lib/matrix";
-import Network from "../lib/network";
+import Network, { LayerPreset } from "../lib/network";
 import { range, shuffle } from "../lib/utils";
 import BatchGradientDescent from "../optimizers/batch-gradient-descent";
 import Optimizer from "../optimizers/optimizer";
@@ -20,7 +19,7 @@ export default class Neural<O extends Optimizer> extends Classifier {
         optimizer = new BatchGradientDescent() as any,
         lossFunction = new SquaredLoss()
     }: {
-        layers: Layer[];
+        layers: LayerPreset<any>[];
         optimizer?: O;
         lossFunction?: LossFunction;
     }) {
