@@ -145,8 +145,44 @@ export default class DataFrame {
         return this;
     }
 
-    normalize() {
-        // todo
+    normalize({
+        mode = 'target',
+        min = 0,
+        max = 1
+    }: {
+        mode?: 'target' | 'input' | 'both';
+        min?: number;
+        max?: number;
+    } = {}) {
+        let minInput = Number.MAX_VALUE,
+            maxInput = -Number.MAX_VALUE,
+            minTarget = Number.MAX_VALUE,
+            maxTarget = -Number.MAX_VALUE;
+
+        for (const { input, target } of this.data) {
+            minInput = Math.min(minInput, Math.min(...input.entries));
+            maxInput = Math.max(maxInput, Math.max(...input.entries));
+            minTarget = Math.min(minTarget, Math.min(...target.entries));
+            maxTarget = Math.max(maxTarget, Math.max(...target.entries));
+        }
+
+        for (const { input, target } of this.data) {
+            if (mode !== 'target') {
+                const a = (max - min) / (maxInput - minInput),
+                    b = max - a * maxInput;
+
+                for (let i = 0; i < input.entries.length; i++) input.entries[i] = a * input.entries[i] + b;
+            }
+
+            if (mode !== 'input') {
+                const a = (max - min) / (maxTarget - minTarget),
+                    b = max - a * maxTarget;
+
+                for (let i = 0; i < target.entries.length; i++) target.entries[i] = a * target.entries[i] + b;
+            }
+        }
+
+        return this;
     }
 
     split(divide = .5) {
@@ -164,6 +200,11 @@ export default class DataFrame {
             training,
             validation
         ];
+    }
+
+    static from(file: string) {
+        // todo
+        // browser and nodejs support
     }
 
 }

@@ -1,28 +1,30 @@
-import { LayerArguments } from "../lib/network";
 import AveragePoolingLayer from "./average-pooling";
-import ConvolutionalLayer from "./convolutional";
-import FullyConnectedLayer from "./fully-connected";
+import ConvolutionalLayer, { ConvolutionalParams } from "./convolutional";
+import FullyConnectedLayer, { FullyConnectedParams } from "./fully-connected";
 import MaxPoolingLayer from "./max-pooling";
+import { PoolingParams } from "./pooling";
 import RecurrentLayer from "./recurrent";
 
+type PartialParams<T extends { input: any; }> = Omit<T, 'input'> & Partial<Pick<T, 'input'>>;
+
 const Layers = {
-    avgp: (args: LayerArguments<typeof AveragePoolingLayer>) => ({
+    avgp: (args: PartialParams<PoolingParams>) => ({
         layer: AveragePoolingLayer,
         args
     }),
-    conv: (args: LayerArguments<typeof ConvolutionalLayer>) => ({
+    conv: (args: PartialParams<ConvolutionalParams>) => ({
         layer: ConvolutionalLayer,
         args
     }),
-    fcon: (args: LayerArguments<typeof FullyConnectedLayer>) => ({
+    fcon: (args: PartialParams<FullyConnectedParams>) => ({
         layer: FullyConnectedLayer,
         args
     }),
-    maxp: (args: LayerArguments<typeof MaxPoolingLayer>) => ({
+    maxp: (args: PartialParams<PoolingParams>) => ({
         layer: MaxPoolingLayer,
         args
     }),
-    recu: (args: LayerArguments<typeof RecurrentLayer>) => ({
+    recu: (args: PartialParams<{ input: '' }>) => ({
         layer: RecurrentLayer,
         args
     })

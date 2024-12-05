@@ -3,6 +3,19 @@ import Matrix from "../lib/matrix";
 import { calculatePooledMatrix } from "../lib/utils";
 import Layer from "./layer";
 
+export type PoolingParams = {
+    input: [number, number];
+    window: [number, number]; // just allow for one value?? (symmetric)
+    /**
+     * @default window width
+     */
+    stride?: number;
+    /**
+     * @default {@link Sigmoid}
+     */
+    activation?: Activator;
+};
+
 export default abstract class PoolingLayer extends Layer {
 
     window: [number, number];
@@ -13,12 +26,7 @@ export default abstract class PoolingLayer extends Layer {
         window,
         stride,
         activation = new Sigmoid()
-    }: {
-        input: [number, number];
-        window: [number, number]; // just allow for one value?? (symmetric)
-        stride?: number;
-        activation?: Activator;
-    }) {
+    }: PoolingParams) {
         stride = stride || window[0]; // only works for hor/ver symmetry
         const output = calculatePooledMatrix(...input, window[0], stride, 0);
 

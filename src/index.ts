@@ -9,3 +9,5 @@ export {
     Optimizers,
     DataFrame
 }
+
+export * from './lib/functions';

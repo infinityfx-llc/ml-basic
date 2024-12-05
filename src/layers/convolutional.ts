@@ -3,6 +3,23 @@ import Matrix from "../lib/matrix";
 import { calculatePooledMatrix } from "../lib/utils";
 import Layer from "./layer";
 
+export type ConvolutionalParams = {
+    input: [number, number];
+    kernel: [number, number]; // just allow for one value?? (symmetric)
+    /**
+     * @default 1
+     */
+    stride?: number;
+    /**
+     * @default 0
+     */
+    padding?: number;
+    /**
+     * @default {@link Sigmoid}
+     */
+    activation?: Activator;
+};
+
 export default class ConvolutionalLayer extends Layer {
 
     name = 'Convolutional';
@@ -16,13 +33,7 @@ export default class ConvolutionalLayer extends Layer {
         stride = 1,
         padding = 0,
         activation = new Sigmoid()
-    }: {
-        input: [number, number];
-        kernel: [number, number]; // just allow for one value?? (symmetric)
-        stride?: number;
-        padding?: number;
-        activation?: Activator;
-    }) {
+    }: ConvolutionalParams) {
         const output = calculatePooledMatrix(...input, kernel[0], stride, padding);
 
         super(input, output, activation);

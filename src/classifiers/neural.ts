@@ -101,4 +101,28 @@ export default class Neural<O extends Optimizer> extends Classifier {
         return this.error;
     }
 
+    validate({
+        data
+    }: {
+        data: DataFrame;
+    }) {
+        const order = shuffle(range(data.data.length)),
+            errors = {
+                min: 1,
+                avg: 0,
+                max: 0
+            };
+
+        for (let j = 0; j < order.length; j++) {
+            const { input, target } = data.data[order[j]];
+
+            const error = this.backPropagate(input, target);
+            errors.avg += error / order.length;
+            errors.min = Math.min(errors.min, error);
+            errors.max = Math.max(errors.max, error);
+        }
+
+        return errors;
+    }
+
 }

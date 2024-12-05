@@ -2,6 +2,15 @@ import { Activator, Sigmoid } from "../lib/functions";
 import Matrix from "../lib/matrix";
 import Layer from "./layer";
 
+export type FullyConnectedParams = {
+    input: number | [number, number];
+    output: number;
+    /**
+     * @default {@link Sigmoid}
+     */
+    activation?: Activator;
+};
+
 export default class FullyConnectedLayer extends Layer {
 
     name = 'FullyConnected';
@@ -12,11 +21,7 @@ export default class FullyConnectedLayer extends Layer {
         input,
         output,
         activation = new Sigmoid()
-    }: {
-        input: number | [number, number];
-        output: number;
-        activation?: Activator;
-    }) {
+    }: FullyConnectedParams) {
         if (Array.isArray(input)) input = input[0] * input[1];
         super([input, 1], [output, 1], activation);
 
