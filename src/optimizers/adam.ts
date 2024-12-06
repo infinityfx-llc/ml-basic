@@ -54,7 +54,7 @@ export default class Adam extends GradientDescent {
         this.epsilon = epsilon;
     }
 
-    step(gradient: Matrix) {
+    step(gradient: Matrix, batching = true) {
         if (!this.m || !this.v) {
             this.m = new Matrix(gradient.rows, gradient.columns);
             this.v = new Matrix(this.m);
@@ -63,7 +63,7 @@ export default class Adam extends GradientDescent {
         this.m.scale(this.beta1).add(new Matrix(gradient).scale(1 - this.beta1));
         this.v.scale(this.beta2).add(new Matrix(gradient).apply(val => val * val).scale(1 - this.beta2));
 
-        const partial = this.t % this.batchSize !== 0;
+        const partial = batching ? this.t % this.batchSize !== 0 : false;
 
         if (!partial) {
             const exp = Math.floor(this.t / this.batchSize) + 1;

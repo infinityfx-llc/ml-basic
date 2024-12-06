@@ -3,7 +3,7 @@ import Matrix from "../lib/matrix";
 export default abstract class Optimizer {
     
     abstract name: string;
-    abstract step(gradient: Matrix): Matrix;
+    abstract step(gradient: Matrix, batching?: boolean): Matrix;
 
     clone() {
         return Object.assign(Object.create(Object.getPrototypeOf(this)), this);

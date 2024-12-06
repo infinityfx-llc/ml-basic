@@ -73,6 +73,9 @@ export default class Neural<O extends Optimizer> extends Classifier {
     }: {
         data: DataFrame;
         epochs: number;
+        /**
+         * @default 0
+         */
         errorThreshold?: number;
         hyperParameters?: Omit<{
             [K in keyof O as O[K] extends Function ? never : K]?: O[K];

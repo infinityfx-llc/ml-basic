@@ -32,12 +32,12 @@ export default class BatchGradientDescent extends GradientDescent {
         this.batchSize = batchSize;
     }
 
-    step(gradient: Matrix) {
+    step(gradient: Matrix, batching = true) {
         this.aggregate ?
             this.aggregate.add(gradient) :
             this.aggregate = new Matrix(gradient);
 
-        if (this.t % this.batchSize === 0) {
+        if (!batching || this.t % this.batchSize === 0) {
             gradient = super.step(this.aggregate.scale(1 / this.batchSize));
             this.aggregate = undefined;
 

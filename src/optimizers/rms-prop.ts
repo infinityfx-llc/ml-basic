@@ -46,12 +46,12 @@ export default class RMSProp extends GradientDescent {
         this.epsilon = epsilon;
     }
 
-    step(gradient: Matrix) {
+    step(gradient: Matrix, batching = true) {
         if (!this.v) this.v = new Matrix(gradient).set(1);
 
         this.v.scale(this.beta1).add(new Matrix(gradient).apply(val => val * val).scale(1 - this.beta1));
 
-        const partial = this.t % this.batchSize !== 0;
+        const partial = batching ? this.t % this.batchSize !== 0 : false;
 
         if (!partial) gradient.scale(new Matrix(this.v).apply(Math.sqrt).add(this.epsilon).apply(val => 1 / val));
 

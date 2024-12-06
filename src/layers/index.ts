@@ -3,7 +3,7 @@ import ConvolutionalLayer, { ConvolutionalParams } from "./convolutional";
 import FullyConnectedLayer, { FullyConnectedParams } from "./fully-connected";
 import MaxPoolingLayer from "./max-pooling";
 import { PoolingParams } from "./pooling";
-import RecurrentLayer from "./recurrent";
+import RecurrentLayer, { RecurrentParams } from "./recurrent";
 
 type PartialParams<T extends { input: any; }> = Omit<T, 'input'> & Partial<Pick<T, 'input'>>;
 
@@ -24,7 +24,7 @@ const Layers = {
         layer: MaxPoolingLayer,
         args
     }),
-    recu: (args: PartialParams<{ input: '' }>) => ({
+    recu: (args: PartialParams<RecurrentParams>) => ({
         layer: RecurrentLayer,
         args
     })
