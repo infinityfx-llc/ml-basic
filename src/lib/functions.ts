@@ -16,7 +16,7 @@ export abstract class LossFunction {
 
 export class SquaredLoss extends LossFunction {
 
-    name = 'Squared';
+    name = 'SquaredLoss';
 
     mean(output: Matrix, target: Matrix) {
         return new Matrix(target).sub(output).apply(val => val * val).sum() / target.entries.length;
@@ -30,7 +30,7 @@ export class SquaredLoss extends LossFunction {
 
 export class CrossEntropyLoss extends LossFunction {
 
-    name = 'CrossEntropy';
+    name = 'CrossEntropyLoss';
     
     mean(output: Matrix, target: Matrix) { // check if output and target should be switched
         return -new Matrix(output).apply(Math.log).scale(target).sum();

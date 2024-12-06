@@ -3,7 +3,7 @@ import PoolingLayer from "./pooling";
 
 export default class MaxPoolingLayer extends PoolingLayer {
 
-    name = 'MaxPooling';
+    name = 'maxp';
 
     propagate(input: Matrix) {
 

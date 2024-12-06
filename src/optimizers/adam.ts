@@ -30,7 +30,7 @@ export type AdamParams = {
 
 export default class Adam extends GradientDescent {
 
-    name = 'Adam';
+    name = 'adam';
     batchSize: number;
     beta1: number;
     beta2: number;

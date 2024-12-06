@@ -26,7 +26,7 @@ export type RMSPropParams = {
 
 export default class RMSProp extends GradientDescent {
 
-    name = 'RMSProp';
+    name = 'rmsp';
     batchSize: number;
     beta1: number;
     epsilon: number;

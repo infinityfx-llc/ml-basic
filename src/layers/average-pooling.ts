@@ -3,7 +3,7 @@ import PoolingLayer from "./pooling";
 
 export default class AveragePoolingLayer extends PoolingLayer {
 
-    name = 'AveragePooling';
+    name = 'avgp';
 
     propagate(input: Matrix) {
 

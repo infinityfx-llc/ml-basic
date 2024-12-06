@@ -13,7 +13,7 @@ export type FullyConnectedParams = {
 
 export default class FullyConnectedLayer extends Layer {
 
-    name = 'FullyConnected';
+    name = 'fcon';
     weights: Matrix;
     bias: Matrix;
 

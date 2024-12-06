@@ -22,7 +22,7 @@ export type ConvolutionalParams = {
 
 export default class ConvolutionalLayer extends Layer {
 
-    name = 'Convolutional';
+    name = 'conv';
     kernel: Matrix;
     stride: number;
     padding: number;

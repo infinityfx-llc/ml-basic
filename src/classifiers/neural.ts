@@ -9,6 +9,7 @@ import Classifier from "./classifier";
 
 export default class Neural<O extends Optimizer> extends Classifier {
 
+    name = 'Neural';
     epochs = 0;
     error = 1;
     network: Network;

@@ -1,4 +1,5 @@
 import Matrix from "./matrix";
+import { parseCSV, readFile } from "./utils";
 
 const inputKeys = ['input', 'in'] as const;
 const targetKeys = ['target', 'output', 'out', 'label'] as const;
@@ -9,7 +10,7 @@ type TargetValue = InputValue | string;
 type InputKeys = typeof inputKeys[number];
 type TargetKeys = typeof targetKeys[number];
 
-type DataEntry = {
+export type DataEntry = {
     [key in InputKeys | TargetKeys]?: key extends InputKeys ? InputValue : TargetValue;
 };
 
@@ -202,9 +203,19 @@ export default class DataFrame {
         ];
     }
 
-    static from(file: string) {
-        // todo
-        // browser and nodejs support
+    static async from(file: string | Blob) {
+        const [_, ext] = (typeof file === 'string' ?
+            file.match(/.*\.(csv|json)$/i) :
+            file.type.match(/\/(csv|json)$/i)) || [];
+        if (!ext) throw new Error('DataFrame only supports loading .csv or .json files');
+
+        const data = await readFile(file);
+
+        if (ext.toLowerCase() === 'json') {
+            return new DataFrame(JSON.parse(data));
+        } else {
+            return new DataFrame(parseCSV(data));
+        }
     }
 
 }

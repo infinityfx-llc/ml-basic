@@ -14,7 +14,7 @@ export type RecurrentParams = {
 
 export default class RecurrentLayer extends Layer {
 
-    name = 'Recurrent';
+    name = 'recu';
     weights: Matrix;
     bias: Matrix;
     state: Matrix;

@@ -39,8 +39,6 @@
 		"typescript": "^5.6.3"
 	},
     "browser": {
-        "fs": false,
-        "os": false,
-        "worker_threads": false
+        "fs": false
     }
 }

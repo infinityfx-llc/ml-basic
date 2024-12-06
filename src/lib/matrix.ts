@@ -226,6 +226,7 @@ export default class Matrix {
 
     serialize() {
         return {
+            type: 'Matrix',
             rows: this.rows,
             columns: this.columns,
             entries: Array.from(this.entries)

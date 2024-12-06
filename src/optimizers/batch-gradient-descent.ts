@@ -18,7 +18,7 @@ export type BatchGradientDescentParams = {
 
 export default class BatchGradientDescent extends GradientDescent {
 
-    name = 'BatchGradientDescent';
+    name = 'bgd';
     batchSize: number;
     private aggregate?: Matrix;
 

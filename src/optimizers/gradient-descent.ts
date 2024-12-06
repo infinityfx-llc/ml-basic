@@ -14,7 +14,7 @@ export type GradientDescentParams = {
 
 export default class GradientDescent extends Optimizer {
 
-    name = 'GradientDescent';
+    name = 'sgd';
     t = 0;
     learningRate: number;
     clipping: number;

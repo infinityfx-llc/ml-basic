@@ -2,6 +2,8 @@ import Matrix from "../lib/matrix";
 
 export default abstract class Classifier {
 
+    abstract name: string;
+
     abstract propagate(input: Matrix): Matrix;
 
     abstract backPropagate(input: Matrix, target: Matrix): number;
@@ -12,10 +14,6 @@ export default abstract class Classifier {
                 value.serialize() :
                 value;
         });
-    }
-
-    static load() {
-        // todo
     }
 
 }

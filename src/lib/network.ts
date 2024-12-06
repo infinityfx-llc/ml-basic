@@ -1,5 +1,5 @@
 import Layer from "../layers/layer";
-import Optimizer from "../optimizers/optimizer";
+import Optimizer, { HyperParameters } from "../optimizers/optimizer";
 import { LossFunction } from "./functions";
 import Matrix from "./matrix";
 
@@ -56,7 +56,7 @@ export default class Network {
         return error;
     }
 
-    configure(options: any) {
+    configure(options: HyperParameters) {
         this.layers.forEach(layer => layer.optimizer.configure(options));
     }
 

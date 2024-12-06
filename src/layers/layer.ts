@@ -5,6 +5,7 @@ import Optimizer from "../optimizers/optimizer";
 
 export default abstract class Layer {
 
+    type = 'Layer';
     abstract name: string;
     input: [number, number];
     output: [number, number];
