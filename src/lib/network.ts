@@ -1,32 +1,26 @@
+import { Layers } from "../layers";
 import Layer from "../layers/layer";
 import Optimizer, { HyperParameters } from "../optimizers/optimizer";
 import { LossFunction } from "./functions";
 import Matrix from "./matrix";
-
-// todo (show actual object type):
-export type LayerArguments<T extends abstract new (...args: any) => any> = Omit<ConstructorParameters<T>[0], 'input'> & Partial<Pick<ConstructorParameters<T>[0], 'input'>>;
-
-export type LayerPreset<T extends typeof Layer = any> = {
-    layer: T;
-    args: LayerArguments<T>;
-};
 
 export default class Network {
 
     layers: Layer[];
     lossFunction: LossFunction;
 
-    constructor(layers: LayerPreset[], optimizer: Optimizer, lossFunction: LossFunction) {
+    constructor(layers: Layers[], optimizer: Optimizer, lossFunction: LossFunction) {
         this.lossFunction = lossFunction;
         this.layers = new Array(layers.length);
 
         for (let i = 0; i < layers.length; i++) {
             const output = i > 0 ? this.layers[i - 1].output : undefined;
-            const { layer, args } = layers[i];
+            const { Layer, args } = layers[i];
 
             if (!output && !('input' in args)) throw new Error(`Layer ${i + 1} has no input size defined`);
 
-            this.layers[i] = new layer(Object.assign({ input: output }, args));
+            // @ts-expect-error
+            this.layers[i] = new Layer(Object.assign({ input: output }, args));
             this.layers[i].optimizer = optimizer.clone();
             const input = this.layers[i].input;
 

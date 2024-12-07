@@ -5,29 +5,31 @@ import MaxPoolingLayer from "./max-pooling";
 import { PoolingParams } from "./pooling";
 import RecurrentLayer, { RecurrentParams } from "./recurrent";
 
-type PartialParams<T extends { input: any; }> = Omit<T, 'input'> & Partial<Pick<T, 'input'>>;
+type LayerParams<T extends { input: any; }> = Omit<T, 'input'> & Partial<Pick<T, 'input'>>;
 
 const Layers = {
-    avgp: (args: PartialParams<PoolingParams>) => ({
-        layer: AveragePoolingLayer,
+    avgp: (args: LayerParams<PoolingParams>) => ({
+        Layer: AveragePoolingLayer,
         args
     }),
-    conv: (args: PartialParams<ConvolutionalParams>) => ({
-        layer: ConvolutionalLayer,
+    conv: (args: LayerParams<ConvolutionalParams>) => ({
+        Layer: ConvolutionalLayer,
         args
     }),
-    fcon: (args: PartialParams<FullyConnectedParams>) => ({
-        layer: FullyConnectedLayer,
+    fcon: (args: LayerParams<FullyConnectedParams>) => ({
+        Layer: FullyConnectedLayer,
         args
     }),
-    maxp: (args: PartialParams<PoolingParams>) => ({
-        layer: MaxPoolingLayer,
+    maxp: (args: LayerParams<PoolingParams>) => ({
+        Layer: MaxPoolingLayer,
         args
     }),
-    recu: (args: PartialParams<RecurrentParams>) => ({
-        layer: RecurrentLayer,
+    recu: (args: LayerParams<RecurrentParams>) => ({
+        Layer: RecurrentLayer,
         args
     })
 };
+
+export type Layers = ReturnType<(typeof Layers)[keyof typeof Layers]>;
 
 export default Layers;

@@ -33,6 +33,8 @@ import MLBasic from 'ml-basic';
 ## Usage
 
 ```javascript
+import { Neural } from 'ml-basic';
+
 const net = new Neural({
     layers: [
         ...

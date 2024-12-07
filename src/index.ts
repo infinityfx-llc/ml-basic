@@ -39,8 +39,8 @@ function deserialize(data: any): any {
         if (type === 'Optimizer') return Object.assign(Optimizers[data.name](), deserialize(rest));
         if (type === 'Layer') {
             // @ts-expect-error
-            const { layer } = Layers[data.name]();
-            return Object.assign(Object.create(layer.prototype), deserialize(rest));
+            const { Layer } = Layers[data.name]();
+            return Object.assign(Object.create(Layer.prototype), deserialize(rest));
         }
     }
 
