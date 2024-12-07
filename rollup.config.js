@@ -6,7 +6,7 @@ const isProd = process.env.NODE_ENV === 'production';
 
 export default {
     input: ['src/index.ts'],
-    external: ['tslib'],
+    external: ['tslib', 'fs'],
     output: {
         dir: 'dist',
         format: 'es',
