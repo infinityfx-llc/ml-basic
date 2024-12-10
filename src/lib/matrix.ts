@@ -208,6 +208,20 @@ export default class Matrix {
         return this;
     }
 
+    expand(gap: number) {
+        this.rows += (this.rows - 1) * gap;
+        this.columns += (this.columns - 1) * gap;
+
+        const entries = this.entries;
+        this.entries = new Float64Array(this.rows * this.columns);
+
+        for (let i = 0; i < this.entries.length; i++) {
+            this.entries[i] = i % (gap + 1) == 0 ? entries[Math.floor(i / (gap + 1))] : 0;
+        }
+
+        return this;
+    }
+
     static identity(n: number) {
         const matrix = new Matrix(n, n);
 

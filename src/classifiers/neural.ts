@@ -71,7 +71,8 @@ export default class Neural<O extends Optimizer> extends Classifier {
         data,
         epochs,
         errorThreshold = 0,
-        hyperParameters = {}
+        hyperParameters = {},
+        logProgress = false
     }: {
         data: DataFrame;
         epochs: number;
@@ -82,11 +83,15 @@ export default class Neural<O extends Optimizer> extends Classifier {
         hyperParameters?: Omit<{
             [K in keyof O as O[K] extends Function ? never : K]?: O[K];
         }, 'name' | 't'>;
+        logProgress?: boolean;
     }) {
         const batchSize = 'batchSize' in this.optimizer ? this.optimizer.batchSize as number : 1;
         epochs = Math.ceil(epochs / batchSize) * batchSize;
 
         this.network.configure(hyperParameters);
+
+        if (logProgress) console.log(`\nFitting model (${data.data.length} samples / ${epochs} epochs):`);
+        const start = performance.now();
 
         for (let i = 0; i < epochs; i++) {
             const order = shuffle(range(data.data.length));
@@ -97,10 +102,28 @@ export default class Neural<O extends Optimizer> extends Classifier {
 
                 const error = this.backPropagate(input, target);
                 this.error += error / order.length;
+
+                if (logProgress) {
+                    const progress = (i * order.length + j + 1) / (epochs * order.length) * 100;
+                    const loader = {
+                        0: '-',
+                        1: '\\',
+                        2: '|',
+                        3: '/'
+                    }[Math.round(progress) % 4];
+
+                    process.stdout.write(`\rCompletion: ${(progress).toFixed(1)}% / Error: ${(this.error * 100).toFixed(2)}% -> ${loader}`);
+                }
             }
 
             this.epochs++;
+
             if (this.error <= errorThreshold) break;
+        }
+
+        if (logProgress) {
+            const secs = (performance.now() - start) / 1000;
+            process.stdout.write(`\rCompletion: 100.0% / Error: ${(this.error * 100).toFixed(2)}% -> ${secs.toFixed(1)}sec\n\r\n`);
         }
 
         return this.error;

@@ -5,6 +5,7 @@ import Layers from "./layers";
 import Optimizers from "./optimizers";
 import DataFrame from "./lib/data-frame";
 import Matrix from "./lib/matrix";
+import Network from "./lib/network";
 
 export * from './lib/functions';
 
@@ -32,15 +33,26 @@ function deserialize(data: any): any {
             return data;
         }
 
-        if (data.type === 'Matrix') return new Matrix(data.rows, data.columns, data.entries); // conversion from normal array to float64 (may lose data)
-
         const { type, ...rest } = data;
-        // @ts-expect-error
-        if (type === 'Optimizer') return Object.assign(Optimizers[data.name](), deserialize(rest));
-        if (type === 'Layer') {
-            // @ts-expect-error
-            const { Layer } = Layers[data.name]();
-            return Object.assign(Object.create(Layer.prototype), deserialize(rest));
+        switch (type) {
+            case 'Network':
+            case 'Optimizer':
+            case 'Layer':
+                data = Object.assign({ type }, deserialize(rest));
+        }
+        switch (type) {
+            case 'Matrix':
+                return new Matrix(data.rows, data.columns, data.entries); // conversion from normal array to float64 (may lose data)
+            case 'Network':
+                return Object.assign(Object.create(Network.prototype), data);
+            case 'Optimizer':
+                // @ts-expect-error
+                return Object.assign(Optimizers[data.name](), data);
+            case 'Layer':
+                // @ts-expect-error
+                const { Layer } = Layers[data.name]();
+                return Object.assign(Object.create(Layer.prototype), data);
+
         }
     }
 

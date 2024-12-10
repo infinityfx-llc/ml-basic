@@ -46,15 +46,16 @@ export default class ConvolutionalLayer extends Layer {
         return Matrix.convolve(input.reshape(...this.input), this.kernel, this.stride, this.padding).apply(this.activation.activate);
     }
 
+    // not working correctly? (need to negate error difference??)
     backPropagate(input: Matrix, output: Matrix, loss: Matrix) {
         output.apply(this.activation.deactivate).reshape(...this.output); // check if this reshape is really needed??
         loss.reshape(...this.output);
         input.reshape(...this.input);
 
         const gradient = this.optimizer.step(output.scale(loss));
-        this.kernel.sub(Matrix.convolve(input, gradient).scale(1 / (this.input[0] * this.input[1]))); // scale needed?
+        this.kernel.sub(Matrix.convolve(input, gradient.expand(this.stride - 1)).scale(1 / (this.input[0] * this.input[1]))); // scale needed?
 
-        return new Matrix(this.kernel).flip().convolve(loss, 1, this.input[0] - this.kernel.rows); // padding only works for symmetry
+        return new Matrix(this.kernel).flip().convolve(loss.expand(this.stride - 1), 1, this.input[0] - this.kernel.rows); // padding only works for symmetry (also stride)
     }
 
 }

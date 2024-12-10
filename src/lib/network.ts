@@ -6,6 +6,7 @@ import Matrix from "./matrix";
 
 export default class Network {
 
+    type = 'Network';
     layers: Layer[];
     lossFunction: LossFunction;
 
