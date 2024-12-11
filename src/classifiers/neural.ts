@@ -90,7 +90,7 @@ export default class Neural<O extends Optimizer> extends Classifier {
 
         this.network.configure(hyperParameters);
 
-        if (logProgress) console.log(`\nFitting model (${data.data.length} samples / ${epochs} epochs):`);
+        if (logProgress) process.stdout.write(`\nFitting model (${data.data.length} samples / ${epochs} epochs):\n`);
         const start = performance.now();
 
         for (let i = 0; i < epochs; i++) {
@@ -112,7 +112,7 @@ export default class Neural<O extends Optimizer> extends Classifier {
                         3: '/'
                     }[Math.round(progress) % 4];
 
-                    process.stdout.write(`\rCompletion: ${(progress).toFixed(1)}% / Error: ${(this.error * 100).toFixed(2)}% -> ${loader}`);
+                    process.stdout.write(`\rCompletion ${(progress).toFixed(1)}% | Error ${(this.error * 100).toFixed(2)}% -> ${loader}   `);
                 }
             }
 
@@ -123,7 +123,7 @@ export default class Neural<O extends Optimizer> extends Classifier {
 
         if (logProgress) {
             const secs = (performance.now() - start) / 1000;
-            process.stdout.write(`\rCompletion: 100.0% / Error: ${(this.error * 100).toFixed(2)}% -> ${secs.toFixed(1)}sec\n\r\n`);
+            process.stdout.write(`\rCompletion 100.0% | Error ${(this.error * 100).toFixed(2)}% -> ${secs.toFixed(1)}sec   \n\r\n`);
         }
 
         return this.error;
@@ -144,7 +144,9 @@ export default class Neural<O extends Optimizer> extends Classifier {
         for (let j = 0; j < order.length; j++) {
             const { input, target } = data.data[order[j]];
 
-            const error = this.backPropagate(input, target);
+            const output = this.propagate(input),
+                error = this.network.lossFunction.mean(output, target);
+                
             errors.avg += error / order.length;
             errors.min = Math.min(errors.min, error);
             errors.max = Math.max(errors.max, error);

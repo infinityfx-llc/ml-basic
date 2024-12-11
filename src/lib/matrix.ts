@@ -209,14 +209,20 @@ export default class Matrix {
     }
 
     expand(gap: number) {
+        const columns = this.columns,
+            entries = this.entries;
+
         this.rows += (this.rows - 1) * gap;
         this.columns += (this.columns - 1) * gap;
-
-        const entries = this.entries;
         this.entries = new Float64Array(this.rows * this.columns);
+        gap += 1;
 
-        for (let i = 0; i < this.entries.length; i++) {
-            this.entries[i] = i % (gap + 1) == 0 ? entries[Math.floor(i / (gap + 1))] : 0;
+        for (let i = 0; i < this.rows; i++) {
+            for (let j = 0; j < this.columns; j++) {
+                this.entries[i * this.columns + j] = i % gap == 0 && j % gap == 0 ?
+                    entries[Math.floor(i / gap) * columns + Math.floor(j / gap)] :
+                    0;
+            }
         }
 
         return this;

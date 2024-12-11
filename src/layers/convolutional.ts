@@ -46,7 +46,7 @@ export default class ConvolutionalLayer extends Layer {
         return Matrix.convolve(input.reshape(...this.input), this.kernel, this.stride, this.padding).apply(this.activation.activate);
     }
 
-    // not working correctly? (need to negate error difference??)
+    // not converging on correct target?
     backPropagate(input: Matrix, output: Matrix, loss: Matrix) {
         output.apply(this.activation.deactivate).reshape(...this.output); // check if this reshape is really needed??
         loss.reshape(...this.output);

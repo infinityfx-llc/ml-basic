@@ -1,6 +1,6 @@
 {
     "name": "ml-basic",
-    "version": "2.0.2",
+    "version": "2.0.3",
 	"type": "module",
     "description": "Lightweight, zero dependency, machine learning library",
     "main": "dist/index.js",
