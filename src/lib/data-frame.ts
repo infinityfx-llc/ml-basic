@@ -151,8 +151,17 @@ export default class DataFrame {
         min = 0,
         max = 1
     }: {
+        /**
+         * @default 'target'
+         */
         mode?: 'target' | 'input' | 'both';
+        /**
+         * @default 0
+         */
         min?: number;
+        /**
+         * @default 1
+         */
         max?: number;
     } = {}) {
         let minInput = Number.MAX_VALUE,

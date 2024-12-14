@@ -32,7 +32,7 @@ export default class GradientDescent extends Optimizer {
     step(gradient: Matrix) {
         this.t++;
 
-        gradient.scale(this.learningRate)
+        gradient.scale(this.learningRate);
         if (this.clipping) gradient.clip(-this.clipping, this.clipping);
 
         return gradient;

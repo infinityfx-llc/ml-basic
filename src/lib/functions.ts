@@ -95,11 +95,11 @@ export class Elu extends Activator {
         this.alpha = alpha;
     }
 
-    activate(n: number) {
+    activate = (n: number) => {
         return n > 0 ? n : this.alpha * (Math.exp(n) - 1);
     }
 
-    deactivate(n: number) {
+    deactivate = (n: number) => {
         return n < 0 ? this.alpha * Math.exp(n) : 1;
     }
 
@@ -113,11 +113,11 @@ export class Relu extends Elu {
         super(alpha);
     }
 
-    activate(n: number) {
+    activate = (n: number) => {
         return n < 0 ? this.alpha * n : n;
     }
 
-    deactivate(n: number) {
+    deactivate = (n: number) => {
         return n < 0 ? this.alpha : 1;
     }
 
