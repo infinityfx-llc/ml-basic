@@ -72,10 +72,10 @@ export default class LSTMLayer extends LoopLayer<'o' | 'u' | 'c' | 'memory' | 's
 
         if (!this.index) this.cache('memory', this.memory);
         this.memory.scale(f).add(u);
-        this.cache('memory', this.memory);
+        this.state = new Matrix(this.memory).apply(this.tanh.activate);
 
-        this.state = new Matrix(this.memory).apply(this.tanh.activate).scale(o);
-        this.cache('state', this.state);
+        this.cache('memory', this.memory);
+        this.cache('state', this.state.scale(o));
 
         if (output) return Matrix.mult(this.yWeights, this.state).add(this.yBias).apply(this.activation.activate);
     }
@@ -84,16 +84,15 @@ export default class LSTMLayer extends LoopLayer<'o' | 'u' | 'c' | 'memory' | 's
         const gradient = this.optimizer.step(output.scale(loss), false);
 
         this.yBias.sub(gradient.scale(1 / this.input[0]));
-        this.yWeights.sub(gradient.mult(new Matrix(input).transpose()));
+        this.yWeights.sub(gradient.mult(new Matrix(input).transpose())); // this input (previous output or step input?) (this needs fixing!!)
 
-        // from llm, check correctness
         const dState = Matrix.mult(Matrix.transpose(this.yWeights), gradient);
         const dO = this.get('memory', 1).scale(dState).apply(this.sigmoid.deactivate);
         const dMemory = dState.scale(this.get('o'));
         const dF = new Matrix(this.get('memory')).scale(dMemory).apply(this.sigmoid.deactivate);
         const dU = this.get('c').scale(dMemory).apply(this.sigmoid.deactivate);
         const dC = this.get('u').scale(dMemory).apply(this.tanh.deactivate);
-        const stateT = this.get('state').transpose();
+        const stateT = this.get('state').transpose(); // this also incorrect?? (not taking into account step input?)
 
         this.uBias.sub(dU);
         this.uWeights.sub(dU.mult(stateT));

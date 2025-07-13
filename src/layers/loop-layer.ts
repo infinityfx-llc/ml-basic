@@ -15,7 +15,6 @@ export type LoopParams = {
 export default abstract class LoopLayer<T extends string = ''> extends Layer {
 
     state: Matrix;
-    // outputs: Matrix[];
     // @ts-expect-error
     steps: {
         [key in T | 'output']: Matrix[];
@@ -30,7 +29,6 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
         super(input, [input[0], output], activation);
 
         this.state = new Matrix(input[0], 1);
-        // this.outputs = new Array(Math.max(input[1], output) + 1);
     }
 
     abstract clear(): void;
@@ -50,23 +48,22 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
     propagate(input: Matrix) {
         input.reshape(...this.input);
 
-        for (const key in this.steps) this.steps[key as T | 'output'] = []; // new
+        for (const key in this.steps) this.steps[key as T | 'output'] = [];
 
         const output = [],
             len = Math.max(this.input[1], this.output[1]);
 
         for (let i = 0; i < len; i++) {
-            this.index = i; // new
+            this.index = i;
 
             const stepInput = i < this.input[1] - 1 ?
                 new Matrix(this.input[0], 1,
                     input.entries.slice(i * this.input[0], (i + 1) * this.input[0]) as any as number[]) :
                 undefined;
 
-            if (!i && stepInput) this.cache('output', stepInput); // new
+            if (!i && stepInput) this.cache('output', stepInput);
 
             const stepOutput = this.forward(stepInput, i >= len - this.output[1]);
-            // this.outputs[i + 1] = stepOutput ? stepOutput : new Matrix(this.state); // todo
             this.cache('output', stepOutput ? stepOutput : new Matrix(this.state));
 
             if (stepOutput) output.push(...stepOutput.entries);
@@ -85,12 +82,8 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
             loss.entries.slice((this.output[1] - 1) * this.output[0]) as any as number[]);
 
         for (let i = len - 1; i >= 0; i--) {
-            this.index = i; // new
+            this.index = i;
 
-            // const input = this.outputs[i],
-            // output = this.outputs[i + 1].apply(this.activation.deactivate); // todo
-
-            // loss = this.backward(input, output, loss);
             loss = this.backward(
                 this.get('output'),
                 this.get('output', 1).apply(this.activation.deactivate),
