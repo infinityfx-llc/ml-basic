@@ -27,7 +27,7 @@ import MLBasic from 'ml-basic';
 
 ### Browser
 ```html
-<script src="https://unpkg.com/browse/ml-basic/index.js" type="text/javascript"></script>
+<script src="https://unpkg.com/browse/ml-basic/dist/index.js" type="text/javascript"></script>
 ```
 
 ## Usage

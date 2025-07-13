@@ -1,9 +1,11 @@
 import AveragePoolingLayer from "./average-pooling";
 import ConvolutionalLayer, { ConvolutionalParams } from "./convolutional";
 import FullyConnectedLayer, { FullyConnectedParams } from "./fully-connected";
+import { LoopParams } from "./loop-layer";
+import LSTMLayer from "./lstm";
 import MaxPoolingLayer from "./max-pooling";
 import { PoolingParams } from "./pooling";
-import RecurrentLayer, { RecurrentParams } from "./recurrent";
+import RecurrentLayer from "./recurrent";
 
 type LayerParams<T extends { input: any; }> = Omit<T, 'input'> & Partial<Pick<T, 'input'>>;
 
@@ -24,8 +26,12 @@ const Layers = {
         Layer: MaxPoolingLayer,
         args
     }),
-    recu: (args: LayerParams<RecurrentParams>) => ({
+    recu: (args: LayerParams<LoopParams>) => ({
         Layer: RecurrentLayer,
+        args
+    }),
+    lstm: (args: LayerParams<LoopParams>) => ({
+        Layer: LSTMLayer,
         args
     })
 };
