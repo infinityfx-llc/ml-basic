@@ -1,7 +1,7 @@
 import Matrix from "../lib/matrix";
 import LoopLayer, { LoopParams } from "./loop-layer";
 
-export default class RecurrentLayer extends LoopLayer {
+export default class RecurrentLayer extends LoopLayer<'state' | 'input' | 'output'> {
 
     name = 'recu';
     weights: Matrix;
@@ -18,20 +18,32 @@ export default class RecurrentLayer extends LoopLayer {
         this.state.set(0);
     }
 
-    forward(input: Matrix | undefined, output: boolean) {
+    forward(input: Matrix, output: boolean) {
+        this.cache('state', this.state);
+        this.cache('input', input);
+
         this.state = Matrix.mult(this.weights, this.state);
-
-        if (input) this.state.add(Matrix.mult(this.weights, input));
-
+        this.state.add(Matrix.mult(this.weights, input));
         this.state.add(this.bias).apply(this.activation.activate);
 
-        if (output) return Matrix.mult(this.weights, this.state).add(this.bias).apply(this.activation.activate);
+        if (output) {
+            const output = Matrix.mult(this.weights, this.state).add(this.bias).apply(this.activation.activate);
+            this.cache('output', output);
+
+            return output;
+        } else {
+            this.cache('output', this.state);
+        }
     }
 
-    backward(input: Matrix, output: Matrix, loss: Matrix) {
-        const gradient = this.optimizer.step(output.scale(loss), false);
-        this.bias.sub(gradient.scale(1 / this.input[0])); // scale needed?
-        this.weights.sub(gradient.mult(new Matrix(input).transpose())); // this input (previous output or step input?) (this needs fixing!!)
+    backward(loss: Matrix) {
+        const output = this.get('output').apply(this.activation.deactivate),
+            gradient = this.optimizer.step(output.scale(loss), false),
+            delta = Matrix.mult(gradient, this.get('state').transpose())
+                .add(Matrix.mult(gradient, this.get('input').transpose()));
+
+        this.bias.sub(gradient);
+        this.weights.sub(delta);
 
         return Matrix.transpose(this.weights).mult(loss);
     }

@@ -17,7 +17,7 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
     state: Matrix;
     // @ts-expect-error
     steps: {
-        [key in T | 'output']: Matrix[];
+        [key in T]: Matrix[];
     } = {};
     index = 0;
 
@@ -33,22 +33,22 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
 
     abstract clear(): void;
 
-    abstract forward(input: Matrix | undefined, output: boolean): Matrix | void;
+    abstract forward(input: Matrix, output: boolean): Matrix | void;
 
-    abstract backward(input: Matrix, output: Matrix, loss: Matrix): Matrix;
+    abstract backward(loss: Matrix): Matrix;
 
-    cache(key: T | 'output', value: Matrix) {
+    cache(key: T, value: Matrix) {
         this.steps[key].push(new Matrix(value));
     }
 
-    get(key: T | 'output', offset = 0) {
+    get(key: T, offset = 0) {
         return this.steps[key][this.index + offset];
     }
 
     propagate(input: Matrix) {
         input.reshape(...this.input);
 
-        for (const key in this.steps) this.steps[key as T | 'output'] = [];
+        for (const key in this.steps) this.steps[key] = [];
 
         const output = [],
             len = Math.max(this.input[1], this.output[1]);
@@ -56,16 +56,13 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
         for (let i = 0; i < len; i++) {
             this.index = i;
 
-            const stepInput = i < this.input[1] - 1 ?
+            const stepInput =
                 new Matrix(this.input[0], 1,
-                    input.entries.slice(i * this.input[0], (i + 1) * this.input[0]) as any as number[]) :
-                undefined;
-
-            if (!i && stepInput) this.cache('output', stepInput);
+                    i < this.input[1] - 1 ?
+                        input.entries.slice(i * this.input[0], (i + 1) * this.input[0]) :
+                        undefined);
 
             const stepOutput = this.forward(stepInput, i >= len - this.output[1]);
-            this.cache('output', stepOutput ? stepOutput : new Matrix(this.state));
-
             if (stepOutput) output.push(...stepOutput.entries);
         }
 
@@ -83,11 +80,8 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
 
         for (let i = len - 1; i >= 0; i--) {
             this.index = i;
-
-            loss = this.backward(
-                this.get('output'),
-                this.get('output', 1).apply(this.activation.deactivate),
-                loss);
+            
+            loss = this.backward(loss);
             if (i < this.input[1]) inputLoss.push(...loss.entries);
         }
 

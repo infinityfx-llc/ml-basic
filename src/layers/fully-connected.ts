@@ -40,7 +40,7 @@ export default class FullyConnectedLayer extends Layer {
         loss.reshape(...this.output);
 
         const gradient = this.optimizer.step(output.scale(loss));
-        this.bias.sub(gradient.scale(1 / (this.input[0] * this.input[1]))); // scale needed?
+        this.bias.sub(gradient);
         this.weights.sub(gradient.mult(new Matrix(input).reshape(...this.input).transpose()));
 
         return Matrix.transpose(this.weights).mult(loss);

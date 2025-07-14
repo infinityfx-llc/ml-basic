@@ -52,7 +52,7 @@ export default class ConvolutionalLayer extends Layer {
         input.reshape(...this.input);
 
         const gradient = this.optimizer.step(output.scale(loss));
-        this.kernel.sub(Matrix.convolve(input, gradient.expand(this.stride - 1)).scale(1 / (this.input[0] * this.input[1]))); // scale needed?
+        this.kernel.sub(Matrix.convolve(input, gradient.expand(this.stride - 1)));
 
         return new Matrix(this.kernel).flip().convolve(loss.expand(this.stride - 1), 1, this.input[0] - this.kernel.rows); // padding only works for symmetry (also stride)
     }
