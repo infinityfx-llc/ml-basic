@@ -26,7 +26,7 @@ export default class FullyConnectedLayer extends Layer {
         super([input, 1], [output, 1], activation);
 
         this.weights = Matrix.random(output, input, -1, 1);
-        this.bias = Matrix.random(output, 1, -1, 1);
+        this.bias = new Matrix(output, 1);
     }
 
     propagate(input: Matrix) {

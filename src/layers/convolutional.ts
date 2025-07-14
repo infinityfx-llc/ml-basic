@@ -24,6 +24,7 @@ export default class ConvolutionalLayer extends Layer {
 
     name = 'conv';
     kernel: Matrix;
+    bias: Matrix;
     stride: number;
     padding: number;
 
@@ -38,12 +39,15 @@ export default class ConvolutionalLayer extends Layer {
 
         super(input, output, activation);
         this.kernel = Matrix.random(kernel[0], kernel[1], -1, 1);
+        this.bias = new Matrix(output[0], output[1]);
         this.stride = stride;
         this.padding = padding;
     }
 
     propagate(input: Matrix) {
-        return Matrix.convolve(input.reshape(...this.input), this.kernel, this.stride, this.padding).apply(this.activation.activate);
+        return Matrix.convolve(input.reshape(...this.input), this.kernel, this.stride, this.padding)
+            .add(this.bias)
+            .apply(this.activation.activate);
     }
 
     backPropagate(input: Matrix, output: Matrix, loss: Matrix) {
@@ -52,6 +56,7 @@ export default class ConvolutionalLayer extends Layer {
         input.reshape(...this.input);
 
         const gradient = this.optimizer.step(output.scale(loss));
+        this.bias.sub(gradient);
         this.kernel.sub(Matrix.convolve(input, gradient.expand(this.stride - 1)));
 
         return new Matrix(this.kernel).flip().convolve(loss.expand(this.stride - 1), 1, this.input[0] - this.kernel.rows); // padding only works for symmetry (also stride)

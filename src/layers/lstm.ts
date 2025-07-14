@@ -34,7 +34,7 @@ export default class LSTMLayer extends LoopLayer<'o' | 'u' | 'c' | 'memory' | 's
 
         for (const type of ['y', 'f', 'o', 'u', 'c'] as const) {
             this[`${type}Weights`] = Matrix.random(this.input[0], this.input[0], -1, 1);
-            this[`${type}Bias`] = Matrix.random(this.input[0], 1, -1, 1);
+            this[`${type}Bias`] = new Matrix(this.input[0], 1);
         }
 
         this.memory = new Matrix(this.input[0], 1);

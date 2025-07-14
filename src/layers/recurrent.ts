@@ -11,7 +11,7 @@ export default class RecurrentLayer extends LoopLayer<'state' | 'input' | 'outpu
         super(args);
 
         this.weights = Matrix.random(this.input[0], this.input[0], -1, 1);
-        this.bias = Matrix.random(this.input[0], 1, -1, 1);
+        this.bias = new Matrix(this.input[0], 1);
     }
 
     clear() {
