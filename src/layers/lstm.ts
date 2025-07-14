@@ -95,7 +95,7 @@ export default class LSTMLayer extends LoopLayer<'o' | 'u' | 'c' | 'memory' | 's
 
         const dState = Matrix.mult(Matrix.transpose(this.yWeights), gradient);
         const dO = this.get('memory', 1).scale(dState).apply(this.sigmoid.deactivate);
-        const dMemory = dState.scale(this.get('o'));
+        const dMemory = new Matrix(this.get('memory')).apply(this.tanh.deactivate).scale(dState).scale(this.get('o'));
         const dF = new Matrix(this.get('memory')).scale(dMemory).apply(this.sigmoid.deactivate);
         const dU = this.get('c').scale(dMemory).apply(this.sigmoid.deactivate);
         const dC = this.get('u').scale(dMemory).apply(this.tanh.deactivate);
