@@ -19,8 +19,8 @@ export default class RecurrentLayer extends LoopLayer<'state' | 'input' | 'outpu
     }
 
     forward(input: Matrix, output: boolean) {
-        this.cache('state', this.state);
-        this.cache('input', input);
+        this.store('state', this.state);
+        this.store('input', input);
 
         this.state = Matrix.mult(this.weights, this.state);
         this.state.add(Matrix.mult(this.weights, input));
@@ -28,11 +28,11 @@ export default class RecurrentLayer extends LoopLayer<'state' | 'input' | 'outpu
 
         if (output) {
             const output = Matrix.mult(this.weights, this.state).add(this.bias).apply(this.activation.activate);
-            this.cache('output', output);
+            this.store('output', output);
 
             return output;
         } else {
-            this.cache('output', this.state);
+            this.store('output', this.state);
         }
     }
 

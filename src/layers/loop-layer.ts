@@ -16,7 +16,7 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
 
     state: Matrix;
     // @ts-expect-error
-    steps: {
+    cache: {
         [key in T]: Matrix[];
     } = {};
     index = 0;
@@ -37,18 +37,20 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
 
     abstract backward(loss: Matrix): Matrix;
 
-    cache(key: T, value: Matrix) {
-        this.steps[key].push(new Matrix(value));
+    store(key: T, value: Matrix) {
+        if (!(key in this.cache)) this.cache[key] = [];
+        
+        this.cache[key].push(new Matrix(value));
     }
 
     get(key: T, offset = 0) {
-        return this.steps[key][this.index + offset];
+        return this.cache[key][this.index + offset];
     }
 
     propagate(input: Matrix) {
         input.reshape(...this.input);
 
-        for (const key in this.steps) this.steps[key] = [];
+        for (const key in this.cache) this.cache[key] = [];
 
         const output = [],
             len = Math.max(this.input[1], this.output[1]);
@@ -80,7 +82,7 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
 
         for (let i = len - 1; i >= 0; i--) {
             this.index = i;
-            
+
             loss = this.backward(loss);
             if (i < this.input[1]) inputLoss.push(...loss.entries);
         }

@@ -46,8 +46,8 @@ export default class LSTMLayer extends LoopLayer<'o' | 'u' | 'c' | 'memory' | 's
     }
 
     forward(input: Matrix, output: boolean) {
-        this.cache('state', this.state);
-        this.cache('input', input);
+        this.store('state', this.state);
+        this.store('input', input);
 
         const u = Matrix.mult(this.uWeights, this.state);
         const c = Matrix.mult(this.cWeights, this.state);
@@ -59,31 +59,31 @@ export default class LSTMLayer extends LoopLayer<'o' | 'u' | 'c' | 'memory' | 's
         o.add(Matrix.mult(this.oWeights, input));
 
         u.add(this.uBias).apply(this.sigmoid.activate);
-        this.cache('u', u);
+        this.store('u', u);
 
         c.add(this.cBias).apply(this.tanh.activate);
-        this.cache('c', c);
+        this.store('c', c);
 
         f.add(this.fBias).apply(this.sigmoid.activate);
         o.add(this.oBias).apply(this.sigmoid.activate);
-        this.cache('o', o);
+        this.store('o', o);
 
         u.scale(c);
 
-        if (!this.index) this.cache('memory', this.memory);
+        if (!this.index) this.store('memory', this.memory);
         this.memory.scale(f).add(u);
         this.state = new Matrix(this.memory).apply(this.tanh.activate);
 
-        this.cache('memory', this.memory);
+        this.store('memory', this.memory);
         this.state.scale(o);
 
         if (output) {
             const output = Matrix.mult(this.yWeights, this.state).add(this.yBias).apply(this.activation.activate);
-            this.cache('output', output);
+            this.store('output', output);
 
             return output;
         } else {
-            this.cache('output', this.state);
+            this.store('output', this.state);
         }
     }
 
