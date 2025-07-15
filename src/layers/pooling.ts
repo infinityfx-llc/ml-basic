@@ -1,4 +1,4 @@
-import { Activator, Sigmoid } from "../lib/functions";
+import { Sigmoid } from "../lib/functions";
 import Matrix from "../lib/matrix";
 import { calculatePooledMatrix } from "../lib/utils";
 import Layer from "./layer";
@@ -10,10 +10,6 @@ export type PoolingParams = {
      * @default window width
      */
     stride?: number;
-    /**
-     * @default {@link Sigmoid}
-     */
-    activation?: Activator;
 };
 
 export default abstract class PoolingLayer extends Layer {
@@ -24,13 +20,12 @@ export default abstract class PoolingLayer extends Layer {
     constructor({
         input,
         window,
-        stride,
-        activation = new Sigmoid()
+        stride
     }: PoolingParams) {
         stride = stride || window[0]; // only works for hor/ver symmetry
         const output = calculatePooledMatrix(...input, window[0], stride, 0);
 
-        super(input, output, activation);
+        super(input, output, new Sigmoid());
 
         this.stride = stride;
         this.window = window;
@@ -45,7 +40,7 @@ export default abstract class PoolingLayer extends Layer {
         for (let i = 0; i < loss.rows; i++) {
             for (let j = 0; j < loss.columns; j++) {
 
-                let aggregate = -Number.MAX_VALUE,
+                let aggregate = -Number.MAX_VALUE, // move to only be included in max pooling?
                     indices: number[] = [];
 
                 for (let k = 0; k < this.window[0]; k++) {
