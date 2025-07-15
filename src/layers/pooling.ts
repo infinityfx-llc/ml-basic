@@ -42,25 +42,23 @@ export default abstract class PoolingLayer extends Layer {
     backPropagate(input: Matrix, _: any, loss: Matrix) {
         const gradient = new Matrix(...this.input);
 
-        for (let i = 0; i < gradient.rows; i++) {
-            for (let j = 0; j < gradient.columns; j++) {
+        for (let i = 0; i < loss.rows; i++) {
+            for (let j = 0; j < loss.columns; j++) {
 
                 let aggregate = -Number.MAX_VALUE,
                     indices: number[] = [];
 
                 for (let k = 0; k < this.window[0]; k++) {
                     for (let l = 0; l < this.window[1]; l++) {
-                        const index = i * gradient.columns + j;
+                        const index = (i * this.stride + k) * this.input[1] + (j * this.stride + l);
+                        if (index >= input.entries.length) continue;
 
-                        const value = input.entries[index] || 0;
-                        aggregate = this.backPropagatePoolIndex(aggregate, value, index, indices);
+                        aggregate = this.backPropagatePoolIndex(aggregate, input.entries[index], index, indices);
                     }
                 }
 
                 for (const index of indices) {
-                    const lossIndex = Math.floor(i / this.window[0]) * this.output[1] + Math.floor(j / this.window[1]);
-
-                    gradient.entries[index] = loss.entries[lossIndex] / indices.length;
+                    gradient.entries[index] += loss.entries[i * loss.columns + j] / indices.length;
                 }
             }
         }
