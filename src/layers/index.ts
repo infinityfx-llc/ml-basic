@@ -1,7 +1,7 @@
 import AveragePoolingLayer from "./average-pooling";
 import ConvolutionalLayer, { ConvolutionalParams } from "./convolutional";
 import FullyConnectedLayer, { FullyConnectedParams } from "./fully-connected";
-import { LoopParams } from "./loop-layer";
+import { LoopParams } from "./loop";
 import LSTMLayer from "./lstm";
 import MaxPoolingLayer from "./max-pooling";
 import { PoolingParams } from "./pooling";

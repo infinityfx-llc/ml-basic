@@ -144,6 +144,64 @@ export default class Matrix {
         return this;
     }
 
+    private accumulate(
+        window: [number, number],
+        accumulator: (aggregate: number, mr: number, mc: number, kr: number, kl: number) => number,
+        initial = 0
+    ) {
+
+        for (let i = 0; i < this.rows; i++) {
+            for (let j = 0; j < this.columns; j++) {
+                let aggregate = initial;
+
+                for (let k = 0; k < window[0]; k++) {
+                    for (let l = 0; l < window[1]; l++) {
+                        aggregate = accumulator(aggregate, i, j, k, l);
+                    }
+                }
+
+                this.entries[i * this.columns + j] = aggregate;
+            }
+        }
+
+        return this;
+    }
+
+    static correlate(matrix: Matrix, kernel: Matrix, stride = 1, zeroPadding = 0) {
+        if (matrix.rows + zeroPadding < kernel.rows || matrix.columns + zeroPadding < kernel.columns) throw new Error('Kernel size exceeds Matrix shape size');
+
+        const [rows, cols] = calculatePooledMatrix(matrix.rows, matrix.columns, kernel.rows, stride, zeroPadding),
+            correlated = new Matrix(rows, cols);
+
+        return correlated.accumulate([kernel.rows, kernel.columns], (sum, mr, mc, kr, kl) => {
+            const value = matrix.entries[(mr - zeroPadding * stride + kr) * matrix.columns + (mc - zeroPadding * stride + kl)];
+
+            return sum + (value || 0) * kernel.entries[kr * kernel.columns + kl];
+        });
+    }
+
+    correlate(kernel: Matrix, stride = 1, zeroPadding = 0) {
+        const correlated = Matrix.correlate(this, kernel, stride, zeroPadding);
+        this.entries = correlated.entries;
+        this.rows = correlated.rows;
+        this.columns = correlated.columns;
+
+        return this;
+    }
+
+    static reverseCorrelate(matrix: Matrix, kernel: Matrix, stride = 1) {
+        const correlated = new Matrix(
+            Math.floor(matrix.rows - (kernel.rows - 1) * stride),
+            Math.floor(matrix.columns - (kernel.columns - 1) * stride)
+        );
+
+        return correlated.accumulate([kernel.rows, kernel.columns], (sum, mr, mc, kr, kl) => {
+            const value = matrix.entries[(mr + kr * stride) * matrix.columns + (mc + kl * stride)];
+
+            return sum + (value || 0) * kernel.entries[kr * kernel.columns + kl];
+        });
+    }
+
     static pool({
         matrix,
         window,
@@ -157,49 +215,18 @@ export default class Matrix {
         stride?: number;
         zeroPadding?: number;
         initial?: number;
-        pooler: (aggregate: number, value: number, index: [number, number]) => number;
+        pooler: (aggregate: number, value: number) => number;
     }) {
         if (matrix.rows + zeroPadding < window[0] || matrix.columns + zeroPadding < window[1]) throw new Error('Window size exceeds Matrix shape size');
 
         const [rows, cols] = calculatePooledMatrix(matrix.rows, matrix.columns, window[0], stride, zeroPadding),
             pooled = new Matrix(rows, cols);
 
-        for (let i = 0; i < rows; i++) {
-            for (let j = 0; j < cols; j++) {
+        return pooled.accumulate(window, (aggregate, mr, mc, kr, kl) => {
+            const value = matrix.entries[(mr - zeroPadding * stride + kr) * matrix.columns + (mc - zeroPadding * stride + kl)];
 
-                let aggregate = initial;
-                for (let k = 0; k < window[0]; k++) {
-                    for (let l = 0; l < window[1]; l++) {
-                        const index = (i - zeroPadding * stride + k) * matrix.columns + (j - zeroPadding * stride + l);
-
-                        aggregate = pooler(aggregate, matrix.entries[index] || 0, [k, l]);
-                    }
-                }
-
-                pooled.entries[i * pooled.columns + j] = aggregate;
-            }
-        }
-
-        return pooled;
-    }
-
-    static convolve(matrix: Matrix, kernel: Matrix, stride = 1, zeroPadding = 0) {
-        return this.pool({
-            matrix,
-            window: [kernel.rows, kernel.columns],
-            stride,
-            zeroPadding,
-            pooler: (sum, val, index) => sum + val * kernel.entries[index[0] * kernel.columns + index[1]]
-        });
-    }
-
-    convolve(kernel: Matrix, stride = 1, zeroPadding = 0) {
-        const convolved = Matrix.convolve(this, kernel, stride, zeroPadding);
-        this.entries = convolved.entries;
-        this.rows = convolved.rows;
-        this.columns = convolved.columns;
-
-        return this;
+            return pooler(aggregate, value || 0);
+        }, initial);
     }
 
     clip(min: number, max: number) {
@@ -208,7 +235,7 @@ export default class Matrix {
         return this;
     }
 
-    expand(gap: number) {
+    dialate(gap: number) {
         const columns = this.columns,
             entries = this.entries;
 
@@ -231,7 +258,7 @@ export default class Matrix {
     static identity(n: number) {
         const matrix = new Matrix(n, n);
 
-        for (let i = 0; i < n; i++) matrix.entries[n + i] = 1;
+        for (let i = 0; i < n; i++) matrix.entries[i * n + i] = 1;
 
         return matrix;
     }

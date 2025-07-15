@@ -1,6 +1,6 @@
 import { Sigmoid, TanH } from "../lib/functions";
 import Matrix from "../lib/matrix";
-import LoopLayer, { LoopParams } from "./loop-layer";
+import LoopLayer, { LoopParams } from "./loop";
 
 export default class LSTMLayer extends LoopLayer<'o' | 'u' | 'c' | 'memory' | 'state' | 'input' | 'output'> {
 

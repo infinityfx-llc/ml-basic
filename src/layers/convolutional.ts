@@ -45,7 +45,7 @@ export default class ConvolutionalLayer extends Layer {
     }
 
     propagate(input: Matrix) {
-        return Matrix.convolve(input.reshape(...this.input), this.kernel, this.stride, this.padding)
+        return Matrix.correlate(input.reshape(...this.input), this.kernel, this.stride, this.padding)
             .add(this.bias)
             .apply(this.activation.activate);
     }
@@ -57,9 +57,9 @@ export default class ConvolutionalLayer extends Layer {
 
         const gradient = this.optimizer.step(output.scale(loss));
         this.bias.sub(gradient);
-        this.kernel.sub(Matrix.convolve(input, gradient.expand(this.stride - 1)));
+        this.kernel.sub(Matrix.reverseCorrelate(input, gradient, this.stride));
 
-        return new Matrix(this.kernel).flip().convolve(loss.expand(this.stride - 1), 1, this.input[0] - this.kernel.rows); // padding only works for symmetry (also stride)
+        return new Matrix(this.kernel).flip().correlate(loss.dialate(this.stride - 1), 1, this.input[0] - this.kernel.rows); // padding only works for symmetry (also stride)
     }
 
 }

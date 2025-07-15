@@ -1,5 +1,5 @@
 import Matrix from "../lib/matrix";
-import LoopLayer, { LoopParams } from "./loop-layer";
+import LoopLayer, { LoopParams } from "./loop";
 
 export default class RecurrentLayer extends LoopLayer<'state' | 'input' | 'output'> {
 
