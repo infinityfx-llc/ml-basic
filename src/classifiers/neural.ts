@@ -114,7 +114,7 @@ export default class Neural<O extends Optimizer> extends Classifier {
                         3: '/'
                     }[Math.round(progress) % 4];
 
-                    process.stdout.write(`\rCompletion ${(progress).toFixed(1)}% | Error ${(this.error * 100).toFixed(2)}% -> ${loader}   `);
+                    process.stdout.write(`\rCompletion ${(progress).toFixed(1)}% | Error ${(this.error * (order.length / (j + 1)) * 100).toFixed(2)}% -> ${loader}   `);
                 }
             }
 

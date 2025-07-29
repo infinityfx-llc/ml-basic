@@ -1,5 +1,6 @@
 import AveragePoolingLayer from "./average-pooling";
 import ConvolutionalLayer, { ConvolutionalParams } from "./convolutional";
+import DropoutLayer, { DropoutParams } from "./dropout";
 import FullyConnectedLayer, { FullyConnectedParams } from "./fully-connected";
 import { LoopParams } from "./loop";
 import LSTMLayer from "./lstm";
@@ -32,6 +33,10 @@ const Layers = {
     }),
     lstm: (args: LayerParams<LoopParams>) => ({
         Layer: LSTMLayer,
+        args
+    }),
+    drop: (args: LayerParams<DropoutParams>) => ({
+        Layer: DropoutLayer,
         args
     })
 };
