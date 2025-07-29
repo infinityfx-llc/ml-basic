@@ -88,37 +88,43 @@ export default class LSTMLayer extends LoopLayer<'o' | 'u' | 'c' | 'memory' | 's
     }
 
     backward(loss: Matrix) {
-        const output = this.get('output').apply(this.activation.deactivate),
-            gradient = this.optimizer.step(output.scale(loss), false),
-            stateT = this.get('state').transpose(),
-            inputT = this.get('input').transpose();
+        let output = this.get('output').apply(this.activation.deactivate),
+            nextLoss: Matrix;
 
-        const dState = Matrix.mult(Matrix.transpose(this.yWeights), gradient);
-        const dO = this.get('memory', 1).scale(dState).apply(this.sigmoid.deactivate);
-        const dMemory = new Matrix(this.get('memory')).apply(this.tanh.deactivate).scale(dState).scale(this.get('o'));
-        const dF = new Matrix(this.get('memory')).scale(dMemory).apply(this.sigmoid.deactivate);
-        const dU = this.get('c').scale(dMemory).apply(this.sigmoid.deactivate);
-        const dC = this.get('u').scale(dMemory).apply(this.tanh.deactivate);
+        this.optimizer.step(this.get('input'), output.scale(loss), (_, gradient) => {
+            const stateT = this.get('state').transpose(),
+                inputT = this.get('input').transpose();
 
-        this.uBias.sub(dU);
-        this.uWeights.sub(Matrix.mult(dU, stateT).add(Matrix.mult(dU, inputT)));
+            const dState = Matrix.mult(Matrix.transpose(this.yWeights), gradient);
+            const dO = this.get('memory', 1).scale(dState).apply(this.sigmoid.deactivate);
+            const dMemory = new Matrix(this.get('memory')).apply(this.tanh.deactivate).scale(dState).scale(this.get('o'));
+            const dF = new Matrix(this.get('memory')).scale(dMemory).apply(this.sigmoid.deactivate);
+            const dU = this.get('c').scale(dMemory).apply(this.sigmoid.deactivate);
+            const dC = this.get('u').scale(dMemory).apply(this.tanh.deactivate);
 
-        this.cBias.sub(dC);
-        this.cWeights.sub(Matrix.mult(dC, stateT).add(Matrix.mult(dC, inputT)));
+            this.uBias.sub(dU);
+            this.uWeights.sub(Matrix.mult(dU, stateT).add(Matrix.mult(dU, inputT)));
 
-        this.fBias.sub(dF);
-        this.fWeights.sub(Matrix.mult(dF, stateT).add(Matrix.mult(dF, inputT)));
+            this.cBias.sub(dC);
+            this.cWeights.sub(Matrix.mult(dC, stateT).add(Matrix.mult(dC, inputT)));
 
-        this.oBias.sub(dO);
-        this.oWeights.sub(Matrix.mult(dO, stateT).add(Matrix.mult(dO, inputT)));
+            this.fBias.sub(dF);
+            this.fWeights.sub(Matrix.mult(dF, stateT).add(Matrix.mult(dF, inputT)));
 
-        this.yBias.sub(gradient);
-        this.yWeights.sub(Matrix.mult(gradient, stateT).add(Matrix.mult(gradient, inputT)));
+            this.oBias.sub(dO);
+            this.oWeights.sub(Matrix.mult(dO, stateT).add(Matrix.mult(dO, inputT)));
 
-        return Matrix.transpose(this.uWeights).mult(dU)
-            .add(Matrix.transpose(this.cWeights).mult(dC))
-            .add(Matrix.transpose(this.fWeights).mult(dF))
-            .add(Matrix.transpose(this.oWeights).mult(dO));
+            this.yBias.sub(gradient);
+            this.yWeights.sub(Matrix.mult(gradient, stateT).add(Matrix.mult(gradient, inputT)));
+
+            nextLoss = Matrix.transpose(this.uWeights).mult(dU)
+                .add(Matrix.transpose(this.cWeights).mult(dC))
+                .add(Matrix.transpose(this.fWeights).mult(dF))
+                .add(Matrix.transpose(this.oWeights).mult(dO));
+        });
+
+        // @ts-expect-error
+        return nextLoss;
     }
 
 }

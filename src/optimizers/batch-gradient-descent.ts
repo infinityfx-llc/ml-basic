@@ -19,11 +19,15 @@ export type BatchGradientDescentParams = {
 export default class BatchGradientDescent extends GradientDescent {
 
     name = 'bgd';
+    i = 0;
     batchSize: number;
-    private aggregate?: Matrix;
+    private batch?: {
+        input: Matrix;
+        gradient: Matrix;
+    };
 
     constructor({
-        learningRate = 0.1,
+        learningRate = 0.01,
         clipping = 0,
         batchSize = 8
     }: BatchGradientDescentParams = {}) {
@@ -32,20 +36,24 @@ export default class BatchGradientDescent extends GradientDescent {
         this.batchSize = batchSize;
     }
 
-    step(gradient: Matrix, batching = true) {
-        this.aggregate ?
-            this.aggregate.add(gradient) :
-            this.aggregate = new Matrix(gradient);
-
-        if (!batching || this.t % this.batchSize === 0) {
-            gradient = super.step(this.aggregate.scale(1 / this.batchSize));
-            this.aggregate = undefined;
-
-            return gradient;
+    step(input: Matrix, gradient: Matrix, callback: (input: Matrix, gradient: Matrix) => void) {
+        if (this.batch) {
+            this.batch.input.add(input);
+            this.batch.gradient.add(gradient);
+        } else {
+            this.batch = {
+                input: new Matrix(input),
+                gradient: new Matrix(gradient)
+            };
         }
 
-        this.t++; // not super elegant
-        return new Matrix(gradient).set(0);
+        this.i++;
+
+        if (this.i % this.batchSize !== 0 || !this.batch) return;
+
+        super.step(this.batch.input.scale(1 / this.batchSize), this.batch.gradient.scale(1 / this.batchSize), callback);
+
+        this.batch = undefined;
     }
 
 }

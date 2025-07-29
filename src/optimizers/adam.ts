@@ -1,5 +1,5 @@
 import Matrix from "../lib/matrix";
-import GradientDescent from "./gradient-descent";
+import BatchGradientDescent from "./batch-gradient-descent";
 
 export type AdamParams = {
     /**
@@ -28,10 +28,9 @@ export type AdamParams = {
     epsilon?: number;
 };
 
-export default class Adam extends GradientDescent {
+export default class Adam extends BatchGradientDescent {
 
     name = 'adam';
-    batchSize: number;
     beta1: number;
     beta2: number;
     epsilon: number;
@@ -46,34 +45,31 @@ export default class Adam extends GradientDescent {
         beta2 = 0.999,
         epsilon = 1e-8
     }: AdamParams = {}) {
-        super({ learningRate, clipping });
+        super({ learningRate, clipping, batchSize });
 
-        this.batchSize = batchSize;
         this.beta1 = beta1;
         this.beta2 = beta2;
         this.epsilon = epsilon;
     }
 
-    step(gradient: Matrix, batching = true) {
-        if (!this.m || !this.v) {
-            this.m = new Matrix(gradient.rows, gradient.columns);
-            this.v = new Matrix(this.m);
-        }
+    step(input: Matrix, gradient: Matrix, callback: (input: Matrix, gradient: Matrix) => void) {
+        super.step(input, gradient, (input, gradient) => {
+            if (!this.m || !this.v) {
+                this.m = new Matrix(gradient.rows, gradient.columns);
+                this.v = new Matrix(this.m);
+            }
 
-        this.m.scale(this.beta1).add(new Matrix(gradient).scale(1 - this.beta1));
-        this.v.scale(this.beta2).add(new Matrix(gradient).apply(val => val * val).scale(1 - this.beta2));
+            this.m.scale(this.beta1).add(new Matrix(gradient).scale(1 - this.beta1));
+            this.v.scale(this.beta2).add(new Matrix(gradient).apply(val => val * val).scale(1 - this.beta2));
 
-        const partial = batching ? this.t % this.batchSize !== 0 : false;
-
-        if (!partial) {
-            const exp = Math.floor(this.t / this.batchSize) + 1;
+            const exp = Math.floor(this.i / this.batchSize) + 1;
             const mHat = new Matrix(this.m).scale(1 / (1 - Math.pow(this.beta1, exp))),
                 vHat = new Matrix(this.v).scale(1 / (1 - Math.pow(this.beta2, exp)));
 
             gradient = mHat.scale(vHat.apply(Math.sqrt).add(this.epsilon).apply(val => 1 / val));
-        }
 
-        return super.step(partial ? new Matrix(gradient).set(0) : gradient);
+            callback(input, gradient);
+        });
     }
 
 }

@@ -20,6 +20,8 @@ export type ConvolutionalParams = {
     activation?: Activator;
 };
 
+// non square support
+
 export default class ConvolutionalLayer extends Layer {
 
     name = 'conv';
@@ -55,9 +57,10 @@ export default class ConvolutionalLayer extends Layer {
         loss.reshape(...this.output);
         input.reshape(...this.input);
 
-        const gradient = this.optimizer.step(output.scale(loss));
-        this.bias.sub(gradient);
-        this.kernel.sub(Matrix.reverseCorrelate(input, gradient, this.stride));
+        this.optimizer.step(input, output.scale(loss), (input, gradient) => {
+            this.bias.sub(gradient);
+            this.kernel.sub(Matrix.reverseCorrelate(input, gradient, this.stride));
+        });
 
         return new Matrix(this.kernel).flip().correlate(loss.dialate(this.stride - 1), 1, this.input[0] - this.kernel.rows); // padding only works for symmetry (also stride)
     }

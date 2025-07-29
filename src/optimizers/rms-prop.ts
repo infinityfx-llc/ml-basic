@@ -1,5 +1,5 @@
 import Matrix from "../lib/matrix";
-import GradientDescent from "./gradient-descent";
+import BatchGradientDescent from "./batch-gradient-descent";
 
 export type RMSPropParams = {
     /**
@@ -24,10 +24,9 @@ export type RMSPropParams = {
     epsilon?: number;
 };
 
-export default class RMSProp extends GradientDescent {
+export default class RMSProp extends BatchGradientDescent {
 
     name = 'rmsp';
-    batchSize: number;
     beta1: number;
     epsilon: number;
     private v?: Matrix;
@@ -39,23 +38,20 @@ export default class RMSProp extends GradientDescent {
         beta1 = 0.9,
         epsilon = 1e-8
     }: RMSPropParams = {}) {
-        super({ learningRate, clipping });
+        super({ learningRate, clipping, batchSize });
 
-        this.batchSize = batchSize;
         this.beta1 = beta1;
         this.epsilon = epsilon;
     }
 
-    step(gradient: Matrix, batching = true) {
-        if (!this.v) this.v = new Matrix(gradient).set(1);
+    step(input: Matrix, gradient: Matrix, callback: (input: Matrix, gradient: Matrix) => void) {
+        super.step(input, gradient, (input, gradient) => {
+            if (!this.v) this.v = new Matrix(gradient).set(1);
+            this.v.scale(this.beta1).add(new Matrix(gradient).apply(val => val * val).scale(1 - this.beta1));
+            gradient.scale(new Matrix(this.v).apply(Math.sqrt).add(this.epsilon).apply(val => 1 / val));
 
-        this.v.scale(this.beta1).add(new Matrix(gradient).apply(val => val * val).scale(1 - this.beta1));
-
-        const partial = batching ? this.t % this.batchSize !== 0 : false;
-
-        if (!partial) gradient.scale(new Matrix(this.v).apply(Math.sqrt).add(this.epsilon).apply(val => 1 / val));
-
-        return super.step(partial ? new Matrix(gradient).set(0) : gradient);
+            callback(input, gradient);
+        });
     }
 
 }

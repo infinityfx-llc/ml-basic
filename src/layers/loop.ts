@@ -29,6 +29,7 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
         super(input, [input[0], output], activation);
 
         this.state = new Matrix(input[0], 1);
+        this.optimizer.configure({ batchSize: 1 });
     }
 
     abstract clear(): void;

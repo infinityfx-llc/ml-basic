@@ -15,12 +15,11 @@ export type GradientDescentParams = {
 export default class GradientDescent extends Optimizer {
 
     name = 'sgd';
-    t = 0;
     learningRate: number;
     clipping: number;
 
     constructor({
-        learningRate = 0.1,
+        learningRate = 0.01,
         clipping = 0
     }: GradientDescentParams = {}) {
         super();
@@ -29,13 +28,11 @@ export default class GradientDescent extends Optimizer {
         this.clipping = clipping;
     }
 
-    step(gradient: Matrix) {
-        this.t++;
-
+    step(input: Matrix, gradient: Matrix, callback: (input: Matrix, gradient: Matrix) => void) {
         gradient.scale(this.learningRate);
         if (this.clipping) gradient.clip(-this.clipping, this.clipping);
 
-        return gradient;
+        callback(input, gradient);
     }
 
 }

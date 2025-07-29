@@ -13,7 +13,7 @@ export default abstract class Optimizer {
     
     type = 'Optimizer';
     abstract name: string;
-    abstract step(gradient: Matrix, batching?: boolean): Matrix;
+    abstract step(input: Matrix, gradient: Matrix, callback: (input: Matrix, gradient: Matrix) => void): void;
 
     clone() {
         return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
