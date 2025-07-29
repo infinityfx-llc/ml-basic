@@ -1,6 +1,5 @@
 import Matrix from "../lib/matrix";
-import { browser } from "../lib/utils";
-import { writeFile } from 'fs';
+import { saveJsonFile } from "../lib/utils";
 
 export default abstract class Classifier {
 
@@ -19,23 +18,7 @@ export default abstract class Classifier {
     }
 
     save(file: string) {
-        const data = this.export();
-
-        if (!/\.json$/i.test(file)) file = file + '.json';
-        if (browser()) {
-            file = file.replace(/.*\//, '');
-
-            const blob = new Blob([data], { type: 'application/json' }),
-                a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = file;
-            a.click();
-            URL.revokeObjectURL(a.href);
-        } else {
-            writeFile(file, data, error => {
-                if (error) throw error;
-            });
-        }
+        saveJsonFile(file, this.export());
     }
 
 }

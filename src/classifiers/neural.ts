@@ -72,7 +72,8 @@ export default class Neural<O extends Optimizer> extends Classifier {
         epochs,
         errorThreshold = 0,
         hyperParameters = {},
-        logProgress = false
+        logProgress = false,
+        onEpoch
     }: {
         data: DataFrame;
         epochs: number;
@@ -84,6 +85,7 @@ export default class Neural<O extends Optimizer> extends Classifier {
             [K in keyof O as O[K] extends Function ? never : K]?: O[K];
         }, 'name' | 't'>;
         logProgress?: boolean;
+        onEpoch?: (error: number) => Promise<void> | void;
     }) {
         const batchSize = 'batchSize' in this.optimizer ? this.optimizer.batchSize as number : 1;
         epochs = Math.ceil(epochs / batchSize) * batchSize;
@@ -117,9 +119,12 @@ export default class Neural<O extends Optimizer> extends Classifier {
             }
 
             this.epochs++;
+            onEpoch?.(this.error);
 
             if (this.error <= errorThreshold) break;
         }
+
+        this.network.configure(Object.assign({}, this.optimizer) as any);
 
         if (logProgress) {
             const secs = (performance.now() - start) / 1000;

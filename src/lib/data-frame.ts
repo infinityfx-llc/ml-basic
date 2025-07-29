@@ -1,5 +1,5 @@
 import Matrix from "./matrix";
-import { parseCSV, readFile } from "./utils";
+import { parseCSV, readFile, saveJsonFile } from "./utils";
 
 const inputKeys = ['input', 'in'] as const;
 const targetKeys = ['target', 'output', 'out', 'label'] as const;
@@ -24,6 +24,10 @@ export default class DataFrame {
         target: Matrix;
     }[];
     labels = new Map<string, number>();
+    size: {
+        input: number;
+        target: number;
+    };
 
     constructor(raw: InputData);
     constructor(input: InputData, target: TargetData);
@@ -47,6 +51,11 @@ export default class DataFrame {
                 target: output
             }
         });
+
+        this.size = {
+            input: this.data[0].input.entries.length,
+            target: this.data[0].target.entries.length
+        };
     }
 
     private isValue(value: TargetValue | DataEntry) {
@@ -225,6 +234,15 @@ export default class DataFrame {
         } else {
             return new DataFrame(parseCSV(data));
         }
+    }
+
+    save(file: string) {
+        const data = JSON.stringify(this.data.map(({ input, target }) => ({
+            input: Array.from(input.entries),
+            target: Array.from(target.entries)
+        })));
+
+        saveJsonFile(file, data);
     }
 
 }

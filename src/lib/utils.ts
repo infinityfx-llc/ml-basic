@@ -1,5 +1,5 @@
 import { DataEntry } from "./data-frame";
-import { readFile as fsReadFile } from 'fs';
+import { readFile as fsReadFile, writeFile } from 'fs';
 
 export const browser = () => typeof self !== 'undefined' && typeof self.location !== 'undefined';
 
@@ -76,4 +76,22 @@ export function parseCSV(data: string) { // better errors for when this fails?
             return entry;
         }, {} as DataEntry);
     });
+}
+
+export function saveJsonFile(file: string, data: any) {
+    if (!/\.json$/i.test(file)) file = file + '.json';
+    if (browser()) {
+        file = file.replace(/.*\//, '');
+
+        const blob = new Blob([data], { type: 'application/json' }),
+            a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = file;
+        a.click();
+        URL.revokeObjectURL(a.href);
+    } else {
+        writeFile(file, data, error => {
+            if (error) throw error;
+        });
+    }
 }
