@@ -27,6 +27,9 @@ export default class DataFrame {
     size: {
         input: number;
         target: number;
+    } = {
+        input: 0,
+        target: 0
     };
 
     constructor(raw: InputData);
@@ -45,17 +48,16 @@ export default class DataFrame {
                     output = this.getKey(entry, targetKeys);
                 }
 
+            this.size.input = input.entries.length;
+            // @ts-expect-error
+            this.size.target = output.entries.length;
+
             return {
                 input,
                 // @ts-expect-error
                 target: output
             }
         });
-
-        this.size = {
-            input: this.data[0].input.entries.length,
-            target: this.data[0].target.entries.length
-        };
     }
 
     private isValue(value: TargetValue | DataEntry) {
@@ -211,9 +213,10 @@ export default class DataFrame {
 
         training.data = this.data.slice(0, index);
         training.labels = this.labels;
+        training.size = this.size;
         validation.data = this.data.slice(index);
         validation.labels = this.labels;
-
+        validation.size = this.size;
 
         return [
             training,
