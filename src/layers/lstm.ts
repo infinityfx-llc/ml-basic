@@ -91,7 +91,7 @@ export default class LSTMLayer extends LoopLayer<'o' | 'u' | 'c' | 'memory' | 's
         let output = this.get('output').apply(this.activation.deactivate),
             nextLoss: Matrix;
 
-        this.optimizer.step(this.get('input'), output.scale(loss), (_, gradient) => {
+        this.optimizer.step(new Matrix(1, 1), output.scale(loss), (_, gradient) => {
             const stateT = this.get('state').transpose(),
                 inputT = this.get('input').transpose();
 

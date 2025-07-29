@@ -1,4 +1,5 @@
 import { Layers } from "../layers";
+import DropoutLayer from "../layers/dropout";
 import Layer from "../layers/layer";
 import Optimizer, { HyperParameters } from "../optimizers/optimizer";
 import { LossFunction } from "./functions";
@@ -29,16 +30,22 @@ export default class Network {
         }
     }
 
-    propagate(input: Matrix) {
+    propagate(input: Matrix, disableDropout = true) {
         let outputs = [input];
 
-        for (let i = 0; i < this.layers.length; i++) outputs.push(this.layers[i].propagate(outputs[i]));
+        for (let i = 0; i < this.layers.length; i++) {
+            if (this.layers[i] instanceof DropoutLayer && disableDropout) {
+                outputs.push(new Matrix(outputs[i]));
+            } else {
+                outputs.push(this.layers[i].propagate(outputs[i]));
+            }
+        }
 
         return outputs;
     }
 
     backPropagate(input: Matrix, target: Matrix) {
-        const outputs = this.propagate(input),
+        const outputs = this.propagate(input, false),
             output = outputs[outputs.length - 1],
             error = this.lossFunction.mean(output, target);
 
