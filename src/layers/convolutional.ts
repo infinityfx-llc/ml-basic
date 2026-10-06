@@ -5,7 +5,7 @@ import Layer from "./layer";
 
 export type ConvolutionalParams = {
     input: [number, number];
-    kernel: [number, number]; // just allow for one value?? (symmetric)
+    kernel: [number, number];
     /**
      * @default 1
      */
@@ -19,8 +19,6 @@ export type ConvolutionalParams = {
      */
     activation?: Activator;
 };
-
-// non square support
 
 export default class ConvolutionalLayer extends Layer {
 
@@ -37,7 +35,7 @@ export default class ConvolutionalLayer extends Layer {
         padding = 0,
         activation = new Sigmoid()
     }: ConvolutionalParams) {
-        const output = calculatePooledMatrix(...input, kernel[0], stride, padding);
+        const output = calculatePooledMatrix(...input, kernel, stride, padding);
 
         super(input, output, activation);
         this.kernel = Matrix.random(kernel[0], kernel[1], -1, 1);
@@ -53,16 +51,21 @@ export default class ConvolutionalLayer extends Layer {
     }
 
     backPropagate(input: Matrix, output: Matrix, loss: Matrix) {
-        output.apply(this.activation.deactivate).reshape(...this.output); // check if this reshape is really needed??
+        output.apply(this.activation.deactivate).reshape(...this.output);
         loss.reshape(...this.output);
         input.reshape(...this.input);
 
-        this.optimizer.step(input, output.scale(loss), (input, gradient) => {
+        const delta = output.scale(loss);
+        loss = new Matrix(delta)
+            .dialate(this.stride - 1)
+            .correlate(new Matrix(this.kernel).flip(), 1, this.kernel.rows - 1 - this.padding);
+
+        this.optimizer.step(input, delta, (input, gradient) => {
             this.bias.sub(gradient);
-            this.kernel.sub(Matrix.reverseCorrelate(input, gradient, this.stride));
+            this.kernel.sub(Matrix.reverseCorrelate(input, gradient, this.stride, this.padding));
         });
 
-        return new Matrix(this.kernel).flip().correlate(loss.dialate(this.stride - 1), 1, this.input[0] - this.kernel.rows); // padding only works for symmetry (also stride)
+        return loss;
     }
 
 }

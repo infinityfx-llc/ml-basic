@@ -192,15 +192,15 @@ export default class Matrix {
         return this;
     }
 
-    static reverseCorrelate(matrix: Matrix, kernel: Matrix, stride = 1) {
+    static reverseCorrelate(matrix: Matrix, kernel: Matrix, stride = 1, zeroPadding = 0) {
         const correlated = new Matrix(
-            Math.floor(matrix.rows - (kernel.rows - 1) * stride),
-            Math.floor(matrix.columns - (kernel.columns - 1) * stride)
+            Math.floor(matrix.rows + zeroPadding * 2 - (kernel.rows - 1) * stride),
+            Math.floor(matrix.columns + zeroPadding * 2 - (kernel.columns - 1) * stride)
         );
 
         return correlated.accumulate([kernel.rows, kernel.columns], (sum, mr, mc, kr, kl) => {
-            const r = mr + kr * stride;
-            const c = mc + kl * stride;
+            const r = kr * stride - zeroPadding + mr;
+            const c = kl * stride - zeroPadding + mc;
             const inBounds = r >= 0 && r < matrix.rows && c >= 0 && c < matrix.columns;
             const value = inBounds ? matrix.entries[r * matrix.columns + c] : 0;
 

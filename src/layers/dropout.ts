@@ -14,6 +14,7 @@ export default class DropoutLayer extends Layer {
 
     name = 'drop';
     rate: number;
+    private mask?: Matrix;
 
     constructor({
         input,
@@ -26,13 +27,25 @@ export default class DropoutLayer extends Layer {
     }
 
     propagate(input: Matrix) {
-        return new Matrix(input.rows, input.columns, new Array(this.input[0] * this.input[1]).fill(0).map((_, i) => {
-            return Math.random() < this.rate ? 0 : input.entries[i];
-        }));
+        input.reshape(...this.input);
+
+        this.mask = new Matrix(input.rows, input.columns);
+
+        for (let i = 0; i < this.mask.entries.length; i++) {
+            this.mask.entries[i] = Math.random() < this.rate ? 0 : 1 / (1 - this.rate);
+        }
+
+        return new Matrix(input).scale(this.mask);
     }
 
     backPropagate(_1: Matrix, _2: Matrix, loss: Matrix) {
-        return loss;
+        loss.reshape(...this.output);
+        
+        if (this.mask) {
+            return new Matrix(loss).scale(this.mask);
+        }
+
+        return new Matrix(loss);
     }
 
 }

@@ -36,16 +36,19 @@ export default class FullyConnectedLayer extends Layer {
     }
 
     backPropagate(input: Matrix, output: Matrix, loss: Matrix) {
-        output.apply(this.activation.deactivate).reshape(...this.output); // check if this reshape is really needed??
+        output.apply(this.activation.deactivate).reshape(...this.output);
         loss.reshape(...this.output);
         input.reshape(...this.input);
 
-        this.optimizer.step(input, output.scale(loss), (input, gradient) => {
+        const delta = output.scale(loss);
+        loss = Matrix.transpose(this.weights).mult(delta);
+
+        this.optimizer.step(input, delta, (input, gradient) => {
             this.bias.sub(gradient);
-            this.weights.sub(gradient.mult(input.transpose()));
+            this.weights.sub(Matrix.mult(gradient, input.transpose()));
         });
 
-        return Matrix.transpose(this.weights).mult(loss);
+        return loss;
     }
 
 }
