@@ -9,15 +9,20 @@ export type HyperParameters = {
     epsilon?: number;
 };
 
+export type ParameterUpdate = {
+    param: Matrix;
+    gradient: Matrix;
+};
+
 export default abstract class Optimizer {
     
     type = 'Optimizer';
     abstract name: string;
-    abstract step(input: Matrix, gradient: Matrix, callback: (input: Matrix, gradient: Matrix) => void): void;
+    abstract step(updates: ParameterUpdate[]): void;
 
-    clone() {
-        return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
-    }
+    flush?(): void;
+
+    abstract clone(): this;
 
     configure(options: HyperParameters) {
         Object.assign(this, options);

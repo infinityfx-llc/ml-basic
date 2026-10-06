@@ -1,4 +1,5 @@
 import Matrix from "../lib/matrix";
+import { ParameterUpdate } from "./optimizer";
 import GradientDescent from "./gradient-descent";
 
 export type BatchGradientDescentParams = {
@@ -21,10 +22,7 @@ export default class BatchGradientDescent extends GradientDescent {
     name = 'bgd';
     i = 0;
     batchSize: number;
-    private batch?: {
-        input: Matrix;
-        gradient: Matrix;
-    };
+    protected batch = new Map<Matrix, Matrix>();
 
     constructor({
         learningRate = 0.01,
@@ -36,24 +34,49 @@ export default class BatchGradientDescent extends GradientDescent {
         this.batchSize = batchSize;
     }
 
-    step(input: Matrix, gradient: Matrix, callback: (input: Matrix, gradient: Matrix) => void) {
-        if (this.batch) {
-            this.batch.input.add(input);
-            this.batch.gradient.add(gradient);
-        } else {
-            this.batch = {
-                input: new Matrix(input),
-                gradient: new Matrix(gradient)
-            };
-        }
-
+    step(updates: ParameterUpdate[]) {
         this.i++;
 
-        if (this.i % this.batchSize !== 0 || !this.batch) return;
+        for (const { param, gradient } of updates) {
+            const acc = this.batch.get(param);
+            if (acc) {
+                acc.add(gradient);
+            } else {
+                this.batch.set(param, new Matrix(gradient));
+            }
+        }
 
-        super.step(this.batch.input.scale(1 / this.batchSize), this.batch.gradient.scale(1 / this.batchSize), callback);
+        if (this.i % this.batchSize !== 0) return;
 
-        this.batch = undefined;
+        this.applyBatch(this.batchSize);
+    }
+
+    flush() {
+        const remaining = this.i % this.batchSize;
+        if (remaining > 0 && this.batch.size > 0) {
+            this.applyBatch(remaining);
+        }
+    }
+
+    protected applyBatch(count: number) {
+        const batchUpdates: ParameterUpdate[] = [];
+        for (const [param, acc] of this.batch.entries()) {
+            batchUpdates.push({
+                param,
+                gradient: acc.scale(1 / count)
+            });
+        }
+        this.batch.clear();
+
+        super.step(batchUpdates);
+    }
+
+    clone(): this {
+        return new BatchGradientDescent({
+            learningRate: this.learningRate,
+            clipping: this.clipping,
+            batchSize: this.batchSize
+        }) as this;
     }
 
 }

@@ -118,6 +118,7 @@ export default class Neural<O extends Optimizer> extends Classifier {
                 }
             }
 
+            this.network.flush();
             this.epochs++;
             onEpoch?.(this.error);
 

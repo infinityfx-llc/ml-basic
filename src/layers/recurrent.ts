@@ -38,14 +38,15 @@ export default class RecurrentLayer extends LoopLayer<'state' | 'input' | 'outpu
 
     backward(loss: Matrix) {
         const output = this.get('output').apply(this.activation.deactivate);
+        const gradient = output.scale(loss);
 
-        this.optimizer.step(new Matrix(1, 1), output.scale(loss), (_, gradient) => {
-            const delta = Matrix.mult(gradient, this.get('state').transpose())
-                .add(Matrix.mult(gradient, this.get('input').transpose()));
+        const delta = Matrix.mult(gradient, this.get('state').transpose())
+            .add(Matrix.mult(gradient, this.get('input').transpose()));
 
-            this.bias.sub(gradient);
-            this.weights.sub(delta);
-        });
+        this.optimizer.step([
+            { param: this.bias, gradient },
+            { param: this.weights, gradient: delta }
+        ]);
 
         return Matrix.transpose(this.weights).mult(loss);
     }
