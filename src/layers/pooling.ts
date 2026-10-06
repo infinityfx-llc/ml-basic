@@ -5,7 +5,7 @@ import Layer from "./layer";
 
 export type PoolingParams = {
     input: [number, number];
-    window: [number, number]; // just allow for one value?? (symmetric)
+    window: [number, number];
     /**
      * @default window width
      */
@@ -23,7 +23,7 @@ export default abstract class PoolingLayer extends Layer {
         stride
     }: PoolingParams) {
         stride = stride || window[0]; // only works for hor/ver symmetry
-        const output = calculatePooledMatrix(...input, window[0], stride, 0);
+        const output = calculatePooledMatrix(...input, window, stride, 0);
 
         super(input, output, new Sigmoid());
 

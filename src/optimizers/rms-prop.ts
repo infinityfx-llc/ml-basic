@@ -44,6 +44,7 @@ export default class RMSProp extends BatchGradientDescent {
         this.epsilon = epsilon;
     }
 
+    // check for optimization and renaming
     protected applyBatch(count: number) {
         for (const [param, acc] of this.batch.entries()) {
             const g = acc.scale(1 / count);
