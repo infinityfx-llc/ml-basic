@@ -28,9 +28,9 @@ export default class DataFrame {
         input: number;
         target: number;
     } = {
-        input: 0,
-        target: 0
-    };
+            input: 0,
+            target: 0
+        };
 
     constructor(raw: InputData);
     constructor(input: InputData, target: TargetData);
@@ -43,20 +43,17 @@ export default class DataFrame {
 
             if (target) {
                 output = this.isValue(target[i]) ? this.toValue(target[i]) : this.getKey(target[i], targetKeys);
-            } else
-                if (!this.isValue(entry)) {
-                    output = this.getKey(entry, targetKeys);
-                }
+            } else if (!this.isValue(entry)) {
+                output = this.getKey(entry, targetKeys);
+            }
 
             this.size.input = input.entries.length;
-            // @ts-expect-error
-            this.size.target = output.entries.length;
+            this.size.target = output!.entries.length;
 
             return {
                 input,
-                // @ts-expect-error
-                target: output
-            }
+                target: output!
+            };
         });
     }
 
@@ -71,9 +68,10 @@ export default class DataFrame {
 
         if (typeof value === 'string') {
             let index = this.labels.get(value);
-            if (!index) {
+
+            if (index === undefined) {
                 index = this.labels.size;
-                this.labels.set(value, this.labels.size);
+                this.labels.set(value, index);
             }
 
             value = new Array(index).fill(0); // auto padding without .clean() call?
@@ -110,7 +108,7 @@ export default class DataFrame {
         duplicates?: 'remove' | 'keep';
         uneven?: 'remove' | 'pad';
     } = {}) {
-        const data = new Set();
+        const data = new Set<string>();
         const lengths = {
             input: new Map<number, number>(),
             target: new Map<number, number>()
@@ -122,9 +120,10 @@ export default class DataFrame {
 
             if (missing === 'remove' && !(inputLength && targetLength)) return false;
             if (duplicates === 'remove') {
-                if (data.has(entry.input)) return false;
+                const key = entry.input.entries.toString()
+                if (data.has(key)) return false;
 
-                data.add(entry.input);
+                data.add(key);
             }
 
             if (inputLength) lengths.input.set(inputLength, (lengths.input.get(inputLength) || 0) + 1);
@@ -181,25 +180,36 @@ export default class DataFrame {
             maxTarget = -Number.MAX_VALUE;
 
         for (const { input, target } of this.data) {
-            minInput = Math.min(minInput, Math.min(...input.entries));
-            maxInput = Math.max(maxInput, Math.max(...input.entries));
-            minTarget = Math.min(minTarget, Math.min(...target.entries));
-            maxTarget = Math.max(maxTarget, Math.max(...target.entries));
+            for (let i = 0; i < input.entries.length; i++) {
+                const val = input.entries[i];
+
+                minInput = Math.min(minInput, val);
+                maxInput = Math.max(maxInput, val);
+            }
+
+            for (let i = 0; i < target.entries.length; i++) {
+                const val = target.entries[i];
+
+                minTarget = Math.min(minTarget, val);
+                maxTarget = Math.max(maxTarget, val);
+            }
         }
+
+        const inputDiff = maxInput - minInput;
+        const aInput = inputDiff === 0 ? 0 : (max - min) / inputDiff;
+        const bInput = inputDiff === 0 ? min : max - aInput * maxInput;
+
+        const targetDiff = maxTarget - minTarget;
+        const aTarget = targetDiff === 0 ? 0 : (max - min) / targetDiff;
+        const bTarget = targetDiff === 0 ? min : max - aTarget * maxTarget;
 
         for (const { input, target } of this.data) {
             if (mode !== 'target') {
-                const a = (max - min) / (maxInput - minInput),
-                    b = max - a * maxInput;
-
-                for (let i = 0; i < input.entries.length; i++) input.entries[i] = a * input.entries[i] + b;
+                input.apply(val => inputDiff === 0 ? min : aInput * val + bInput);
             }
 
             if (mode !== 'input') {
-                const a = (max - min) / (maxTarget - minTarget),
-                    b = max - a * maxTarget;
-
-                for (let i = 0; i < target.entries.length; i++) target.entries[i] = a * target.entries[i] + b;
+                input.apply(val => targetDiff === 0 ? min : aTarget * val + bTarget);
             }
         }
 

@@ -168,15 +168,18 @@ export default class Matrix {
     }
 
     static correlate(matrix: Matrix, kernel: Matrix, stride = 1, zeroPadding = 0) {
-        if (matrix.rows + zeroPadding < kernel.rows || matrix.columns + zeroPadding < kernel.columns) throw new Error('Kernel size exceeds Matrix shape size');
+        if (matrix.rows + zeroPadding * 2 < kernel.rows || matrix.columns + zeroPadding * 2 < kernel.columns) throw new Error('Kernel size exceeds Matrix shape size');
 
-        const [rows, cols] = calculatePooledMatrix(matrix.rows, matrix.columns, kernel.rows, stride, zeroPadding),
+        const [rows, cols] = calculatePooledMatrix(matrix.rows, matrix.columns, [kernel.rows, kernel.columns], stride, zeroPadding),
             correlated = new Matrix(rows, cols);
 
         return correlated.accumulate([kernel.rows, kernel.columns], (sum, mr, mc, kr, kl) => {
-            const value = matrix.entries[(mr - zeroPadding * stride + kr) * matrix.columns + (mc - zeroPadding * stride + kl)];
+            const r = mr * stride - zeroPadding + kr;
+            const c = mc * stride - zeroPadding + kl;
+            const inBounds = r >= 0 && r < matrix.rows && c >= 0 && c < matrix.columns;
+            const value = inBounds ? matrix.entries[r * matrix.columns + c] : 0;
 
-            return sum + (value || 0) * kernel.entries[kr * kernel.columns + kl];
+            return sum + value * kernel.entries[kr * kernel.columns + kl];
         });
     }
 
@@ -196,9 +199,12 @@ export default class Matrix {
         );
 
         return correlated.accumulate([kernel.rows, kernel.columns], (sum, mr, mc, kr, kl) => {
-            const value = matrix.entries[(mr + kr * stride) * matrix.columns + (mc + kl * stride)];
+            const r = mr + kr * stride;
+            const c = mc + kl * stride;
+            const inBounds = r >= 0 && r < matrix.rows && c >= 0 && c < matrix.columns;
+            const value = inBounds ? matrix.entries[r * matrix.columns + c] : 0;
 
-            return sum + (value || 0) * kernel.entries[kr * kernel.columns + kl];
+            return sum + value * kernel.entries[kr * kernel.columns + kl];
         });
     }
 
@@ -217,15 +223,18 @@ export default class Matrix {
         initial?: number;
         pooler: (aggregate: number, value: number) => number;
     }) {
-        if (matrix.rows + zeroPadding < window[0] || matrix.columns + zeroPadding < window[1]) throw new Error('Window size exceeds Matrix shape size');
+        if (matrix.rows + zeroPadding * 2 < window[0] || matrix.columns + zeroPadding * 2 < window[1]) throw new Error('Window size exceeds Matrix shape size');
 
-        const [rows, cols] = calculatePooledMatrix(matrix.rows, matrix.columns, window[0], stride, zeroPadding),
+        const [rows, cols] = calculatePooledMatrix(matrix.rows, matrix.columns, window, stride, zeroPadding),
             pooled = new Matrix(rows, cols);
 
         return pooled.accumulate(window, (aggregate, mr, mc, kr, kl) => {
-            const value = matrix.entries[(mr - zeroPadding * stride + kr) * matrix.columns + (mc - zeroPadding * stride + kl)];
+            const r = mr * stride - zeroPadding + kr;
+            const c = mc * stride - zeroPadding + kl;
+            const inBounds = r >= 0 && r < matrix.rows && c >= 0 && c < matrix.columns;
+            const value = inBounds ? matrix.entries[r * matrix.columns + c] : 0;
 
-            return pooler(aggregate, value || 0);
+            return pooler(aggregate, value);
         }, initial);
     }
 

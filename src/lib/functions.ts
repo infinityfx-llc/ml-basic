@@ -31,13 +31,26 @@ export class SquaredLoss extends LossFunction {
 export class CrossEntropyLoss extends LossFunction {
 
     name = 'CrossEntropyLoss';
-    
-    mean(output: Matrix, target: Matrix) { // check if output and target should be switched
-        return -new Matrix(output).apply(Math.log).scale(target).sum();
+    eps = 1e-15;
+
+    mean(output: Matrix, target: Matrix) {
+
+        return -new Matrix(output)
+            .apply(val => Math.log(Math.min(Math.max(val, this.eps), 1 - this.eps)))
+            .scale(target)
+            .sum() / target.entries.length;
     }
 
     derivative(output: Matrix, target: Matrix) {
-        return new Matrix(output).sub(target);
+        const scaled = new Matrix(output).apply(y => {
+            const clampedY = Math.min(Math.max(y, this.eps), 1 - this.eps);
+
+            return 1 / (Math.max(clampedY * (1 - clampedY), this.eps) * target.entries.length);
+        });
+
+        return new Matrix(output)
+            .sub(target)
+            .scale(scaled);
     }
 
 }
@@ -100,7 +113,7 @@ export class Elu extends Activator {
     }
 
     deactivate = (n: number) => {
-        return n < 0 ? this.alpha * Math.exp(n) : 1;
+        return n < 0 ? n + this.alpha : 1;
     }
 
 }
@@ -132,7 +145,7 @@ export class SoftPlus extends Activator {
     }
 
     deactivate(n: number) {
-        return 1 / (1 + Math.exp(-n));
+        return 1 - Math.exp(-n);
     }
 
 }

@@ -1,9 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "target": "es2022",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "module": "esnext",
     "sourceMap": true,
+    "rootDir": "src",
     "outDir": "dist",
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
@@ -14,8 +19,11 @@
     "declaration": true,
     "declarationDir": "dist/types",
     "emitDeclarationOnly": true,
-    "moduleResolution": "node",
-    "isolatedModules": true
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "types": [
+      "node"
+    ]
   },
   "exclude": [
     "node_modules",

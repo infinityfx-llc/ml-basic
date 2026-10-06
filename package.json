@@ -1,7 +1,7 @@
 {
     "name": "ml-basic",
     "version": "2.2.3",
-	"type": "module",
+    "type": "module",
     "description": "Lightweight, zero dependency, machine learning library",
     "main": "dist/index.js",
     "types": "dist/types/index.d.ts",
@@ -25,19 +25,20 @@
         "lightweight"
     ],
     "scripts": {
-		"build": "rollup -c --environment NODE_ENV:production",
-		"watch": "rollup -c -w"
-	},
+        "build": "rollup -c --environment NODE_ENV:production",
+        "watch": "rollup -c -w"
+    },
     "dependencies": {
-		"tslib": "^2.8.1"
-	},
+        "tslib": "^2.8.1"
+    },
     "devDependencies": {
-		"@rollup/plugin-terser": "^0.4.4",
-		"@rollup/plugin-typescript": "^12.1.1",
-		"rollup": "^4.26.0",
-		"rollup-plugin-delete": "^2.1.0",
-		"typescript": "^5.6.3"
-	},
+        "@types/node": "26.6.4",
+        "@rollup/plugin-terser": "^1.0.0",
+        "@rollup/plugin-typescript": "^12.3.0",
+        "rollup": "^4.64.0",
+        "rollup-plugin-delete": "^3.0.2",
+        "typescript": "^6.0.3"
+    },
     "browser": {
         "fs": false
     }

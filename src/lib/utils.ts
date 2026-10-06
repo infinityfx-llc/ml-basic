@@ -1,5 +1,5 @@
 import { DataEntry } from "./data-frame";
-import { readFile as fsReadFile, writeFile } from 'fs';
+import { readFile as fsReadFile, writeFileSync } from 'fs';
 
 export const browser = () => typeof self !== 'undefined' && typeof self.location !== 'undefined';
 
@@ -21,10 +21,12 @@ export function shuffle(array: any[]) {
     return array;
 }
 
-export function calculatePooledMatrix(rows: number, cols: number, kernel: number, stride: number, padding: number): [number, number] {
+export function calculatePooledMatrix(rows: number, cols: number, kernel: number | [number, number], stride: number, padding: number): [number, number] {
+    const [kRows, kCols] = Array.isArray(kernel) ? kernel : [kernel, kernel];
+
     return [
-        Math.floor((rows + padding * 2 - kernel) / stride + 1),
-        Math.floor((cols + padding * 2 - kernel) / stride + 1)
+        Math.floor((rows + padding * 2 - kRows) / stride + 1),
+        Math.floor((cols + padding * 2 - kCols) / stride + 1)
     ];
 }
 
@@ -33,7 +35,6 @@ export async function readFile(file: string | Blob): Promise<string> {
 
     return new Promise((resolve, reject) => {
         if (blob) {
-
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
             reader.onerror = reject;
@@ -52,9 +53,8 @@ export async function readFile(file: string | Blob): Promise<string> {
     });
 }
 
-export function parseCSV(data: string) { // better errors for when this fails?
-    const [header, ...lines] = data.split(/\r?\n/g);
-    const keys = header.split(/;/g);
+export function parseCSV(data: string) {
+    const sanitize = (str: string) => str.trim().replace(/^["'](.*)["']$/, '$1');
 
     function parseValue(value: string) {
         const num = parseFloat(value);
@@ -63,11 +63,17 @@ export function parseCSV(data: string) { // better errors for when this fails?
         return value === 'null' ? null : value;
     }
 
+    const [header, ...lines] = data
+        .split(/\r?\n/g)
+        .filter(line => !!line);
+    const delimiter = header.includes(';') ? ';' : ',';
+    const keys = header.split(delimiter).map(sanitize);
+
     return lines.map(line => {
-        const values = line.split(/;/g);
+        const values = line.split(delimiter);
 
         return values.reduce((entry, value, i) => {
-            value = value.replace(/\"(.*)\"/, '$1');
+            value = sanitize(value);
             const [_, array] = value.match(/^\[(.*)\]$/) || [];
 
             // @ts-expect-error
@@ -80,18 +86,18 @@ export function parseCSV(data: string) { // better errors for when this fails?
 
 export function saveJsonFile(file: string, data: any) {
     if (!/\.json$/i.test(file)) file = file + '.json';
+    const content = typeof data === 'string' ? data : JSON.stringify(data);
+
     if (browser()) {
         file = file.replace(/.*\//, '');
 
-        const blob = new Blob([data], { type: 'application/json' }),
+        const blob = new Blob([content], { type: 'application/json' }),
             a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = file;
         a.click();
         URL.revokeObjectURL(a.href);
     } else {
-        writeFile(file, data, error => {
-            if (error) throw error;
-        });
+        writeFileSync(file, content, 'utf-8');
     }
 }
