@@ -87,9 +87,6 @@ export default class Neural<O extends Optimizer> extends Classifier {
         logProgress?: boolean;
         onEpoch?: (error: number) => Promise<void> | void;
     }) {
-        const batchSize = 'batchSize' in this.optimizer ? this.optimizer.batchSize as number : 1;
-        epochs = Math.ceil(epochs / batchSize) * batchSize;
-
         this.network.configure(hyperParameters);
 
         if (logProgress) process.stdout.write(`\nFitting model (${data.data.length} samples / ${epochs} epochs):\n`);
@@ -142,7 +139,7 @@ export default class Neural<O extends Optimizer> extends Classifier {
     }) {
         const order = shuffle(range(data.data.length)),
             errors = {
-                min: 1,
+                min: Infinity,
                 avg: 0,
                 max: 0
             };

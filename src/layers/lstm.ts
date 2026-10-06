@@ -2,7 +2,7 @@ import { Sigmoid, TanH } from "../lib/functions";
 import Matrix from "../lib/matrix";
 import LoopLayer, { LoopParams } from "./loop";
 
-export default class LSTMLayer extends LoopLayer<'o' | 'u' | 'c' | 'memory' | 'state' | 'input' | 'output'> {
+export default class LSTMLayer extends LoopLayer<'f' | 'o' | 'u' | 'c' | 'memory' | 'state' | 'input' | 'output'> {
 
     name = 'lstm';
     // @ts-expect-error
@@ -65,6 +65,7 @@ export default class LSTMLayer extends LoopLayer<'o' | 'u' | 'c' | 'memory' | 's
         this.store('c', c);
 
         f.add(this.fBias).apply(this.sigmoid.activate);
+        this.store('f', f);
         o.add(this.oBias).apply(this.sigmoid.activate);
         this.store('o', o);
 
@@ -95,11 +96,19 @@ export default class LSTMLayer extends LoopLayer<'o' | 'u' | 'c' | 'memory' | 's
             inputT = this.get('input').transpose();
 
         const dState = Matrix.mult(Matrix.transpose(this.yWeights), gradient);
-        const dO = this.get('memory', 1).scale(dState).apply(this.sigmoid.deactivate);
-        const dMemory = new Matrix(this.get('memory')).apply(this.tanh.deactivate).scale(dState).scale(this.get('o'));
-        const dF = new Matrix(this.get('memory')).scale(dMemory).apply(this.sigmoid.deactivate);
-        const dU = this.get('c').scale(dMemory).apply(this.sigmoid.deactivate);
-        const dC = this.get('u').scale(dMemory).apply(this.tanh.deactivate);
+        const prevMemory = this.get('memory', -1);
+        const currentMemory = this.get('memory');
+        const tanhMem = new Matrix(currentMemory).apply(this.tanh.activate);
+        const oAct = this.get('o');
+        const uAct = this.get('u');
+        const cAct = this.get('c');
+        const fAct = this.get('f');
+
+        const dO = new Matrix(tanhMem).scale(dState).scale(new Matrix(oAct).apply(this.sigmoid.deactivate));
+        const dMemory = new Matrix(tanhMem).apply(this.tanh.deactivate).scale(dState).scale(oAct);
+        const dF = new Matrix(prevMemory).scale(dMemory).scale(new Matrix(fAct).apply(this.sigmoid.deactivate));
+        const dU = new Matrix(cAct).scale(dMemory).scale(new Matrix(uAct).apply(this.sigmoid.deactivate));
+        const dC = new Matrix(uAct).scale(dMemory).scale(new Matrix(cAct).apply(this.tanh.deactivate));
 
         const nextLoss = Matrix.transpose(this.uWeights).mult(dU)
             .add(Matrix.transpose(this.cWeights).mult(dC))

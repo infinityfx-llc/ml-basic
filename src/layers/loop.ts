@@ -53,42 +53,64 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
 
         for (const key in this.cache) this.cache[key] = [];
 
-        const output = [],
-            len = Math.max(this.input[1], this.output[1]);
+        const len = Math.max(this.input[1], this.output[1]);
+        const result = new Matrix(this.output[0], this.output[1]);
 
         for (let i = 0; i < len; i++) {
             this.index = i;
 
-            const stepInput =
-                new Matrix(this.input[0], 1,
-                    i < this.input[1] - 1 ?
-                        input.entries.slice(i * this.input[0], (i + 1) * this.input[0]) :
-                        undefined);
+            const stepInput = new Matrix(this.input[0], 1);
+            if (i < this.input[1]) {
+                for (let r = 0; r < this.input[0]; r++) {
+                    stepInput.entries[r] = input.entries[r * this.input[1] + i];
+                }
+            }
 
-            const stepOutput = this.forward(stepInput, i >= len - this.output[1]);
-            if (stepOutput) output.push(...stepOutput.entries);
+            const isOutput = i >= len - this.output[1];
+            const stepOutput = this.forward(stepInput, isOutput);
+
+            if (isOutput && stepOutput) {
+                const outIndex = i - (len - this.output[1]);
+                for (let r = 0; r < this.output[0]; r++) {
+                    result.entries[r * this.output[1] + outIndex] = stepOutput.entries[r];
+                }
+            }
         }
 
         this.clear();
 
-        return new Matrix(...this.output, output);
+        return result;
     }
 
     backPropagate(_1: Matrix, _2: Matrix, loss: Matrix) {
-        const len = Math.max(this.input[1], this.output[1]),
-            inputLoss = [];
+        loss.reshape(...this.output);
 
-        loss = new Matrix(this.output[0], 1,
-            loss.entries.slice((this.output[1] - 1) * this.output[0]) as any as number[]);
+        const len = Math.max(this.input[1], this.output[1]);
+        const inputGrad = new Matrix(this.input[0], this.input[1]);
+        let recurrentLoss = new Matrix(this.output[0], 1);
 
         for (let i = len - 1; i >= 0; i--) {
             this.index = i;
 
-            loss = this.backward(loss);
-            if (i < this.input[1]) inputLoss.push(...loss.entries);
+            const stepLoss = new Matrix(this.output[0], 1);
+            if (i >= len - this.output[1]) {
+                const outIndex = i - (len - this.output[1]);
+                for (let r = 0; r < this.output[0]; r++) {
+                    stepLoss.entries[r] = loss.entries[r * this.output[1] + outIndex];
+                }
+            }
+            stepLoss.add(recurrentLoss);
+
+            recurrentLoss = this.backward(stepLoss);
+
+            if (i < this.input[1]) {
+                for (let r = 0; r < this.input[0]; r++) {
+                    inputGrad.entries[r * this.input[1] + i] = recurrentLoss.entries[r];
+                }
+            }
         }
 
-        return new Matrix(...this.input, inputLoss);
+        return inputGrad;
     }
 
 }
