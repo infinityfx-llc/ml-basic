@@ -1,5 +1,4 @@
 import Matrix from "../lib/matrix";
-import { ParameterUpdate } from "./optimizer";
 import GradientDescent from "./gradient-descent";
 
 export type BatchGradientDescentParams = {
@@ -34,49 +33,34 @@ export default class BatchGradientDescent extends GradientDescent {
         this.batchSize = batchSize;
     }
 
-    step(updates: ParameterUpdate[]) {
+    tune(matrix: Matrix, gradient: Matrix) {
+        const entry = this.batch.get(matrix);
+
+        if (entry) {
+            entry.add(gradient);
+        } else {
+            this.batch.set(matrix, new Matrix(gradient));
+        }
+    }
+
+    protected process(matrix: Matrix, gradient: Matrix) {
+        super.tune(matrix, gradient);
+    }
+
+    flush(force = false) {
         this.i++;
 
-        for (const { param, gradient } of updates) {
-            const acc = this.batch.get(param);
-            if (acc) {
-                acc.add(gradient);
-            } else {
-                this.batch.set(param, new Matrix(gradient));
-            }
+        const remainder = this.i % this.batchSize;
+        if (!force && remainder !== 0) return;
+        if (this.batch.size === 0) return;
+
+        const scale = 1 / (remainder === 0 ? this.batchSize : remainder);
+
+        for (const [matrix, gradient] of this.batch.entries()) {
+            this.process(matrix, gradient.scale(scale));
         }
 
-        if (this.i % this.batchSize !== 0) return;
-
-        this.applyBatch(this.batchSize);
-    }
-
-    flush() {
-        const remaining = this.i % this.batchSize;
-        if (remaining > 0 && this.batch.size > 0) {
-            this.applyBatch(remaining);
-        }
-    }
-
-    protected applyBatch(count: number) {
-        const batchUpdates: ParameterUpdate[] = [];
-        for (const [param, acc] of this.batch.entries()) {
-            batchUpdates.push({
-                param,
-                gradient: acc.scale(1 / count)
-            });
-        }
         this.batch.clear();
-
-        super.step(batchUpdates);
-    }
-
-    clone(): this {
-        return new BatchGradientDescent({
-            learningRate: this.learningRate,
-            clipping: this.clipping,
-            batchSize: this.batchSize
-        }) as this;
     }
 
 }

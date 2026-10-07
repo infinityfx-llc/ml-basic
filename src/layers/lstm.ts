@@ -115,18 +115,17 @@ export default class LSTMLayer extends LoopLayer<'f' | 'o' | 'u' | 'c' | 'memory
             .add(Matrix.transpose(this.fWeights).mult(dF))
             .add(Matrix.transpose(this.oWeights).mult(dO));
 
-        this.optimizer.step([
-            { param: this.uBias, gradient: dU },
-            { param: this.uWeights, gradient: Matrix.mult(dU, stateT).add(Matrix.mult(dU, inputT)) },
-            { param: this.cBias, gradient: dC },
-            { param: this.cWeights, gradient: Matrix.mult(dC, stateT).add(Matrix.mult(dC, inputT)) },
-            { param: this.fBias, gradient: dF },
-            { param: this.fWeights, gradient: Matrix.mult(dF, stateT).add(Matrix.mult(dF, inputT)) },
-            { param: this.oBias, gradient: dO },
-            { param: this.oWeights, gradient: Matrix.mult(dO, stateT).add(Matrix.mult(dO, inputT)) },
-            { param: this.yBias, gradient },
-            { param: this.yWeights, gradient: Matrix.mult(gradient, stateT).add(Matrix.mult(gradient, inputT)) }
-        ]);
+        this.optimizer.tune(this.uBias, dU);
+        this.optimizer.tune(this.uWeights, Matrix.mult(dU, stateT).add(Matrix.mult(dU, inputT)));
+        this.optimizer.tune(this.cBias, dC);
+        this.optimizer.tune(this.cWeights, Matrix.mult(dC, stateT).add(Matrix.mult(dC, inputT)));
+        this.optimizer.tune(this.fBias, dF);
+        this.optimizer.tune(this.fWeights, Matrix.mult(dF, stateT).add(Matrix.mult(dF, inputT)));
+        this.optimizer.tune(this.oBias, dO);
+        this.optimizer.tune(this.oWeights, Matrix.mult(dO, stateT).add(Matrix.mult(dO, inputT)));
+        this.optimizer.tune(this.yBias, gradient);
+        this.optimizer.tune(this.yWeights, Matrix.mult(gradient, stateT).add(Matrix.mult(gradient, inputT)));
+        this.optimizer.flush();
 
         return nextLoss;
     }

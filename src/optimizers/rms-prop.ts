@@ -44,39 +44,15 @@ export default class RMSProp extends BatchGradientDescent {
         this.epsilon = epsilon;
     }
 
-    // check for optimization and renaming
-    protected applyBatch(count: number) {
-        for (const [param, acc] of this.batch.entries()) {
-            const g = acc.scale(1 / count);
+    protected process(matrix: Matrix, gradient: Matrix) {
+        let v = this.v.get(matrix);
+        if (!v) this.v.set(matrix, v = new Matrix(matrix.rows, matrix.columns));
 
-            let vParam = this.v.get(param);
-            if (!vParam) {
-                vParam = new Matrix(param.rows, param.columns);
-                this.v.set(param, vParam);
-            }
+        v.scale(this.beta1).add(new Matrix(gradient).apply(val => val * val).scale(1 - this.beta1));
 
-            vParam.scale(this.beta1).add(new Matrix(g).apply(val => val * val).scale(1 - this.beta1));
+        gradient.scale(new Matrix(v).apply(Math.sqrt).add(this.epsilon).apply(val => 1 / val));
 
-            const step = new Matrix(g)
-                .scale(new Matrix(vParam).apply(Math.sqrt).add(this.epsilon).apply(val => 1 / val))
-                .scale(this.learningRate);
-
-            if (this.clipping) step.clip(-this.clipping, this.clipping);
-
-            param.sub(step);
-        }
-
-        this.batch.clear();
-    }
-
-    clone(): this {
-        return new RMSProp({
-            learningRate: this.learningRate,
-            clipping: this.clipping,
-            batchSize: this.batchSize,
-            beta1: this.beta1,
-            epsilon: this.epsilon
-        }) as this;
+        super.process(matrix, gradient);
     }
 
 }

@@ -65,10 +65,9 @@ export default class ConvolutionalLayer extends Layer {
             .dialate(this.stride - 1)
             .correlate(new Matrix(this.kernel).flip(), 1, this.kernel.rows - 1 - this.padding);
 
-        this.optimizer.step([
-            { param: this.kernel, gradient: Matrix.reverseCorrelate(input, gradient, this.stride, this.padding) },
-            { param: this.bias, gradient }
-        ]);
+        this.optimizer.tune(this.kernel, Matrix.reverseCorrelate(input, gradient, this.stride, this.padding));
+        this.optimizer.tune(this.bias, gradient);
+        this.optimizer.flush();
 
         return loss;
     }

@@ -44,11 +44,10 @@ export default class RecurrentLayer extends LoopLayer<'state' | 'input' | 'outpu
         const dInputWeights = Matrix.mult(gradient, this.get('input').transpose());
         const dRecurrentWeights = Matrix.mult(gradient, this.get('state').transpose());
 
-        this.optimizer.step([
-            { param: this.bias, gradient },
-            { param: this.iWeights, gradient: dInputWeights },
-            { param: this.hWeights, gradient: dRecurrentWeights }
-        ]);
+        this.optimizer.tune(this.bias, gradient);
+        this.optimizer.tune(this.iWeights, dInputWeights);
+        this.optimizer.tune(this.hWeights, dRecurrentWeights);
+        this.optimizer.flush();
 
         return Matrix.transpose(this.hWeights).mult(gradient);
     }

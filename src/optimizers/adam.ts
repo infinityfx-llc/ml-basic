@@ -37,6 +37,8 @@ export default class Adam extends BatchGradientDescent {
     t = 0;
     private m = new Map<Matrix, Matrix>();
     private v = new Map<Matrix, Matrix>();
+    private beta1Hat = 0;
+    private beta2Hat = 0;
 
     constructor({
         learningRate = 0.01,
@@ -53,53 +55,30 @@ export default class Adam extends BatchGradientDescent {
         this.epsilon = epsilon;
     }
 
-    protected applyBatch(count: number) {
-        this.t++;
-        const beta1Correction = 1 / (1 - Math.pow(this.beta1, this.t));
-        const beta2Correction = 1 / (1 - Math.pow(this.beta2, this.t));
+    protected process(matrix: Matrix, gradient: Matrix) {
+        let m = this.m.get(matrix);
+        if (!m) this.m.set(matrix, m = new Matrix(matrix.rows, matrix.columns));
 
-        for (const [param, acc] of this.batch.entries()) {
-            const g = acc.scale(1 / count);
+        let v = this.v.get(matrix);
+        if (!v) this.v.set(matrix, v = new Matrix(matrix.rows, matrix.columns));
 
-            let mParam = this.m.get(param);
-            if (!mParam) {
-                mParam = new Matrix(param.rows, param.columns);
-                this.m.set(param, mParam);
-            }
+        m.scale(this.beta1).add(new Matrix(gradient).scale(1 - this.beta1));
+        v.scale(this.beta2).add(gradient.apply(val => val * val).scale(1 - this.beta2));
 
-            let vParam = this.v.get(param);
-            if (!vParam) {
-                vParam = new Matrix(param.rows, param.columns);
-                this.v.set(param, vParam);
-            }
+        const mHat = new Matrix(m).scale(this.beta1Hat);
+        const vHat = new Matrix(v).scale(this.beta2Hat);
 
-            mParam.scale(this.beta1).add(new Matrix(g).scale(1 - this.beta1));
-            vParam.scale(this.beta2).add(new Matrix(g).apply(val => val * val).scale(1 - this.beta2));
+        gradient = mHat.scale(vHat.apply(Math.sqrt).add(this.epsilon).apply(val => 1 / val));
 
-            const mHat = new Matrix(mParam).scale(beta1Correction);
-            const vHat = new Matrix(vParam).scale(beta2Correction);
-
-            const step = mHat
-                .scale(vHat.apply(Math.sqrt).add(this.epsilon).apply(val => 1 / val))
-                .scale(this.learningRate);
-
-            if (this.clipping) step.clip(-this.clipping, this.clipping);
-
-            param.sub(step);
-        }
-
-        this.batch.clear();
+        super.process(matrix, gradient);
     }
 
-    clone(): this {
-        return new Adam({
-            learningRate: this.learningRate,
-            clipping: this.clipping,
-            batchSize: this.batchSize,
-            beta1: this.beta1,
-            beta2: this.beta2,
-            epsilon: this.epsilon
-        }) as this;
+    flush(force?: boolean) {
+        this.t++;
+        this.beta1Hat = 1 / (1 - Math.pow(this.beta1, this.t));
+        this.beta2Hat = 1 / (1 - Math.pow(this.beta2, this.t));
+
+        super.flush(force);
     }
 
 }

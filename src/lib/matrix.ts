@@ -56,9 +56,13 @@ export default class Matrix {
     add(n: number): Matrix;
     add(matrix: Matrix): Matrix;
     add(valueOrMatrix: number | Matrix) {
-        if (valueOrMatrix instanceof Matrix && !this.isEqualShape(valueOrMatrix)) throw new Error('Additive matrix must have an equal shape');
+        if (valueOrMatrix instanceof Matrix) {
+            if (!this.isEqualShape(valueOrMatrix)) throw new Error('Additive matrix must have an equal shape');
 
-        for (let i = 0; i < this.entries.length; i++) this.entries[i] += valueOrMatrix instanceof Matrix ? valueOrMatrix.entries[i] : valueOrMatrix;
+            for (let i = 0; i < this.entries.length; i++) this.entries[i] += valueOrMatrix.entries[i];
+        } else {
+            for (let i = 0; i < this.entries.length; i++) this.entries[i] += valueOrMatrix;
+        }
 
         return this;
     }
@@ -66,9 +70,13 @@ export default class Matrix {
     sub(n: number): Matrix;
     sub(matrix: Matrix): Matrix;
     sub(valueOrMatrix: number | Matrix) {
-        if (valueOrMatrix instanceof Matrix && !this.isEqualShape(valueOrMatrix)) throw new Error('Subtractive matrix must have an equal shape');
+        if (valueOrMatrix instanceof Matrix) {
+            if (!this.isEqualShape(valueOrMatrix)) throw new Error('Subtractive matrix must have an equal shape');
 
-        for (let i = 0; i < this.entries.length; i++) this.entries[i] -= valueOrMatrix instanceof Matrix ? valueOrMatrix.entries[i] : valueOrMatrix;
+            for (let i = 0; i < this.entries.length; i++) this.entries[i] -= valueOrMatrix.entries[i];
+        } else {
+            for (let i = 0; i < this.entries.length; i++) this.entries[i] -= valueOrMatrix;
+        }
 
         return this;
     }
@@ -76,9 +84,13 @@ export default class Matrix {
     scale(n: number): Matrix;
     scale(matrix: Matrix): Matrix;
     scale(valueOrMatrix: number | Matrix) {
-        if (valueOrMatrix instanceof Matrix && !this.isEqualShape(valueOrMatrix)) throw new Error('Scaling matrix must have an equal shape');
+        if (valueOrMatrix instanceof Matrix) {
+            if (!this.isEqualShape(valueOrMatrix)) throw new Error('Scaling matrix must have an equal shape');
 
-        for (let i = 0; i < this.entries.length; i++) this.entries[i] *= valueOrMatrix instanceof Matrix ? valueOrMatrix.entries[i] : valueOrMatrix;
+            for (let i = 0; i < this.entries.length; i++) this.entries[i] *= valueOrMatrix.entries[i];
+        } else {
+            for (let i = 0; i < this.entries.length; i++) this.entries[i] *= valueOrMatrix;
+        }
 
         return this;
     }
@@ -253,21 +265,25 @@ export default class Matrix {
     }
 
     dialate(gap: number) {
-        const columns = this.columns,
-            entries = this.entries;
+        if (gap <= 0) return this;
 
-        this.rows += (this.rows - 1) * gap;
-        this.columns += (this.columns - 1) * gap;
-        this.entries = new Float64Array(this.rows * this.columns);
+        const rows = this.rows + (this.rows - 1) * gap;
+        const columns = this.columns + (this.columns - 1) * gap;
+        const entries = new Float64Array(rows * columns);
         gap += 1;
 
-        for (let i = 0; i < this.rows; i++) {
-            for (let j = 0; j < this.columns; j++) {
-                this.entries[i * this.columns + j] = i % gap == 0 && j % gap == 0 ?
-                    entries[Math.floor(i / gap) * columns + Math.floor(j / gap)] :
-                    0;
+        for (let r = 0; r < this.rows; r++) {
+            const ri = r * this.columns;
+            const rt = r * gap * columns;
+
+            for (let c = 0; c < this.columns; c++) {
+                entries[rt + c * gap] = this.entries[ri + c];
             }
         }
+
+        this.entries = entries;
+        this.rows = rows;
+        this.columns = columns;
 
         return this;
     }

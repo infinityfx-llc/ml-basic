@@ -63,7 +63,7 @@ export default class Network {
     }
 
     flush() {
-        this.layers.forEach(layer => layer.optimizer.flush?.());
+        this.layers.forEach(layer => layer.optimizer.flush(true));
     }
 
 }

@@ -1,5 +1,5 @@
 import Matrix from "../lib/matrix";
-import Optimizer, { ParameterUpdate } from "./optimizer";
+import Optimizer from "./optimizer";
 
 export type GradientDescentParams = {
     /**
@@ -28,20 +28,13 @@ export default class GradientDescent extends Optimizer {
         this.clipping = clipping;
     }
 
-    step(updates: ParameterUpdate[]) {
-        for (const { param, gradient } of updates) {
-            const step = new Matrix(gradient).scale(this.learningRate);
-            if (this.clipping) step.clip(-this.clipping, this.clipping);
+    tune(matrix: Matrix, gradient: Matrix) {
+        const step = new Matrix(gradient).scale(this.learningRate);
+        if (this.clipping) step.clip(-this.clipping, this.clipping);
 
-            param.sub(step);
-        }
+        matrix.sub(step);
     }
 
-    clone(): this {
-        return new GradientDescent({
-            learningRate: this.learningRate,
-            clipping: this.clipping
-        }) as this;
-    }
+    flush() { }
 
 }
