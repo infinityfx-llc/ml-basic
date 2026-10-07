@@ -1,4 +1,4 @@
-import { Activator, Sigmoid } from "../lib/functions";
+import { Activator, Initialization, Sigmoid } from "../lib/functions";
 import Matrix from "../lib/matrix";
 import { calculatePooledMatrix } from "../lib/utils";
 import Layer from "./layer";
@@ -18,6 +18,10 @@ export type ConvolutionalParams = {
      * @default {@link Sigmoid}
      */
     activation?: Activator;
+    /**
+     * @default 'xavier'
+     */
+    initialization?: Initialization;
 };
 
 export default class ConvolutionalLayer extends Layer {
@@ -33,12 +37,13 @@ export default class ConvolutionalLayer extends Layer {
         kernel,
         stride = 1,
         padding = 0,
-        activation = new Sigmoid()
+        activation = new Sigmoid(),
+        initialization = 'xavier'
     }: ConvolutionalParams) {
         const output = calculatePooledMatrix(...input, kernel, stride, padding);
 
-        super(input, output, activation);
-        this.kernel = Matrix.random(kernel[0], kernel[1], -1, 1);
+        super(input, output, activation, initialization);
+        this.kernel = this.initializer(kernel[0], kernel[1]);
         this.bias = new Matrix(output[0], output[1]);
         this.stride = stride;
         this.padding = padding;

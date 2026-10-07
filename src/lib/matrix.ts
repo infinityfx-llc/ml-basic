@@ -12,7 +12,7 @@ export default class Matrix {
         if (rowsOrMatrix instanceof Matrix) {
             this.rows = rowsOrMatrix.rows;
             this.columns = rowsOrMatrix.columns;
-            this.entries = new Float64Array(rowsOrMatrix.entries.slice());
+            this.entries = new Float64Array(rowsOrMatrix.entries);
 
             return;
         }
@@ -21,7 +21,7 @@ export default class Matrix {
         this.columns = columns || rowsOrMatrix;
         this.entries = new Float64Array(rowsOrMatrix * (columns || rowsOrMatrix));
 
-        for (let i = 0; i < this.entries.length; i++) this.entries[i] = entries[i] || 0;
+        if (entries.length) this.entries.set(entries);
     }
 
     isEqualShape(matrix: Matrix) {
@@ -90,7 +90,11 @@ export default class Matrix {
     }
 
     sum() {
-        return this.entries.reduce((a, b) => a + b, 0);
+        let sum = 0;
+
+        for (let i = 0; i < this.entries.length; i++) sum += this.entries[i];
+
+        return sum;
     }
 
     static mult(a: Matrix, b: Matrix) {
@@ -99,14 +103,18 @@ export default class Matrix {
         const c = new Matrix(a.rows, b.columns);
 
         for (let i = 0; i < a.rows; i++) {
-            for (let j = 0; j < b.columns; j++) {
-                let sum = 0;
+            const ra = i * a.columns;
+            const rc = i * b.columns;
 
-                for (let k = 0; k < a.columns; k++) {
-                    sum += a.entries[i * a.columns + k] * b.entries[k * b.columns + j];
+            for (let k = 0; k < a.columns; k++) {
+                const value = a.entries[ra + k];
+                if (value === 0) continue;
+
+                const rb = k * b.columns;
+
+                for (let j = 0; j < b.columns; j++) {
+                    c.entries[rc + j] += value * b.entries[rb + j];
                 }
-
-                c.entries[i * b.columns + j] = sum;
             }
         }
 

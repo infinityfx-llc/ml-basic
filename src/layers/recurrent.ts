@@ -4,15 +4,15 @@ import LoopLayer, { LoopParams } from "./loop";
 export default class RecurrentLayer extends LoopLayer<'state' | 'input' | 'output'> {
 
     name = 'recu';
-    inputWeights: Matrix;
-    recurrentWeights: Matrix;
+    iWeights: Matrix;
+    hWeights: Matrix;
     bias: Matrix;
 
     constructor(args: LoopParams) {
         super(args);
 
-        this.inputWeights = Matrix.random(this.input[0], this.input[0], -1, 1);
-        this.recurrentWeights = Matrix.random(this.input[0], this.input[0], -1, 1);
+        this.iWeights = this.initializer(this.input[0], this.input[0]);
+        this.hWeights = this.initializer(this.input[0], this.input[0]);
         this.bias = new Matrix(this.input[0], 1);
     }
 
@@ -24,8 +24,8 @@ export default class RecurrentLayer extends LoopLayer<'state' | 'input' | 'outpu
         this.store('state', this.state);
         this.store('input', input);
 
-        this.state = Matrix.mult(this.recurrentWeights, this.state);
-        this.state.add(Matrix.mult(this.inputWeights, input));
+        this.state = Matrix.mult(this.hWeights, this.state);
+        this.state.add(Matrix.mult(this.iWeights, input));
         this.state.add(this.bias).apply(this.activation.activate);
 
         if (output) {
@@ -46,11 +46,11 @@ export default class RecurrentLayer extends LoopLayer<'state' | 'input' | 'outpu
 
         this.optimizer.step([
             { param: this.bias, gradient },
-            { param: this.inputWeights, gradient: dInputWeights },
-            { param: this.recurrentWeights, gradient: dRecurrentWeights }
+            { param: this.iWeights, gradient: dInputWeights },
+            { param: this.hWeights, gradient: dRecurrentWeights }
         ]);
 
-        return Matrix.transpose(this.recurrentWeights).mult(gradient);
+        return Matrix.transpose(this.hWeights).mult(gradient);
     }
 
 }

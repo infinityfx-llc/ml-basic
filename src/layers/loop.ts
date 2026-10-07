@@ -1,4 +1,4 @@
-import { Activator, Sigmoid } from "../lib/functions";
+import { Activator, Initialization, Sigmoid } from "../lib/functions";
 import Matrix from "../lib/matrix";
 import Layer from "./layer";
 
@@ -10,6 +10,10 @@ export type LoopParams = {
      * @default {@link Sigmoid}
      */
     activation?: Activator;
+    /**
+     * @default 'xavier'
+     */
+    initialization?: Initialization;
 };
 
 export default abstract class LoopLayer<T extends string = ''> extends Layer {
@@ -24,9 +28,10 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
     constructor({
         input,
         output,
-        activation = new Sigmoid()
+        activation = new Sigmoid(),
+        initialization = 'xavier'
     }: LoopParams) {
-        super(input, [input[0], output], activation);
+        super(input, [input[0], output], activation, initialization);
 
         this.state = new Matrix(input[0], 1);
         this.optimizer.configure({ batchSize: 1 });
@@ -40,7 +45,7 @@ export default abstract class LoopLayer<T extends string = ''> extends Layer {
 
     store(key: T, value: Matrix) {
         if (!(key in this.cache)) this.cache[key] = [];
-        
+
         this.cache[key].push(new Matrix(value));
     }
 

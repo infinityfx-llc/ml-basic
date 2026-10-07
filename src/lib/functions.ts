@@ -149,3 +149,27 @@ export class SoftPlus extends Activator {
     }
 
 }
+
+export type Initializer = (row: number, cols: number) => Matrix;
+
+const xavier: Initializer = (rows, cols) => {
+    const limit = Math.sqrt(6 / (cols + rows));
+
+    return Matrix.random(rows, cols, -limit, limit);
+}
+
+const kaiming: Initializer = (rows, cols) => {
+    const limit = Math.sqrt(6 / cols);
+
+    return Matrix.random(rows, cols, -limit, limit);
+}
+
+const uniform: Initializer = (rows, cols) => Matrix.random(rows, cols, -1, 1);
+
+export const Initializers = {
+    xavier,
+    kaiming,
+    uniform
+};
+
+export type Initialization = keyof typeof Initializers;

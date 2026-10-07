@@ -1,4 +1,4 @@
-import { Activator, Sigmoid } from "../lib/functions";
+import { Activator, Initialization, Initializer, Sigmoid } from "../lib/functions";
 import Matrix from "../lib/matrix";
 import Layer from "./layer";
 
@@ -9,6 +9,10 @@ export type FullyConnectedParams = {
      * @default {@link Sigmoid}
      */
     activation?: Activator;
+    /**
+     * @default 'xavier'
+     */
+    initialization?: Initialization;
 };
 
 export default class FullyConnectedLayer extends Layer {
@@ -20,12 +24,13 @@ export default class FullyConnectedLayer extends Layer {
     constructor({
         input,
         output,
-        activation = new Sigmoid()
+        activation = new Sigmoid(),
+        initialization = 'xavier'
     }: FullyConnectedParams) {
         if (Array.isArray(input)) input = input[0] * input[1];
-        super([input, 1], [output, 1], activation);
+        super([input, 1], [output, 1], activation, initialization);
 
-        this.weights = Matrix.random(output, input, -1, 1);
+        this.weights = this.initializer(output, input);
         this.bias = new Matrix(output, 1);
     }
 
