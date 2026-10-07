@@ -14,7 +14,6 @@ export default abstract class Optimizer {
     type = 'Optimizer';
     abstract name: string;
     abstract tune(matrix: Matrix, gradient: Matrix): void;
-
     abstract flush(force?: boolean): void;
 
     clone() {

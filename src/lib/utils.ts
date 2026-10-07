@@ -1,7 +1,7 @@
 import { DataEntry } from "./data-frame";
 import { readFile as fsReadFile, writeFileSync } from 'fs';
 
-export const browser = () => typeof self !== 'undefined' && typeof self.location !== 'undefined';
+export const browser = () => typeof window !== 'undefined' && typeof document !== 'undefined';
 
 export function range(max: number): number[];
 export function range(min: number, max: number): number[];
@@ -31,25 +31,17 @@ export function calculatePooledMatrix(rows: number, cols: number, kernel: number
 }
 
 export async function readFile(file: string | Blob): Promise<string> {
-    const blob = typeof file !== 'string';
+    if (typeof file !== 'string') return file.text();
+
+    if (browser()) {
+        throw new Error('Unable to access file system from the browser');
+    }
 
     return new Promise((resolve, reject) => {
-        if (blob) {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsText(file, 'utf-8');
-        }
-
-        if (!browser() && !blob) {
-            fsReadFile(file, 'utf-8', (error, data) => {
-                if (error) reject(error);
-
-                resolve(data);
-            });
-        }
-
-        if (browser() && !blob) throw new Error('Unable to access file system from the browser');
+        fsReadFile(file, 'utf-8', (error, data) => {
+            if (error) reject(error);
+            else resolve(data);
+        });
     });
 }
 

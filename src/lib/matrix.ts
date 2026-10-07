@@ -272,12 +272,12 @@ export default class Matrix {
         const entries = new Float64Array(rows * columns);
         gap += 1;
 
-        for (let r = 0; r < this.rows; r++) {
-            const ri = r * this.columns;
-            const rt = r * gap * columns;
+        for (let i = 0; i < this.rows; i++) {
+            const ri = i * this.columns;
+            const rt = i * gap * columns;
 
-            for (let c = 0; c < this.columns; c++) {
-                entries[rt + c * gap] = this.entries[ri + c];
+            for (let j = 0; j < this.columns; j++) {
+                entries[rt + j * gap] = this.entries[ri + j];
             }
         }
 
