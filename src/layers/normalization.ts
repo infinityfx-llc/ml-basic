@@ -54,7 +54,7 @@ export default class NormalizationLayer extends Layer {
         const dg = new Matrix(loss).scale(xHat);
 
         loss.scale(this.gamma);
-        xHat.scale(new Matrix(loss).scale(xHat).mean());
+        xHat.scale(loss.dot(xHat) / loss.entries.length);
 
         this.optimizer.tune(this.gamma, dg);
         this.optimizer.flush();

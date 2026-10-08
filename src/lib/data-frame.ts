@@ -180,19 +180,10 @@ export default class DataFrame {
             maxTarget = -Number.MAX_VALUE;
 
         for (const { input, target } of this.data) {
-            for (let i = 0; i < input.entries.length; i++) {
-                const val = input.entries[i];
-
-                minInput = Math.min(minInput, val);
-                maxInput = Math.max(maxInput, val);
-            }
-
-            for (let i = 0; i < target.entries.length; i++) {
-                const val = target.entries[i];
-
-                minTarget = Math.min(minTarget, val);
-                maxTarget = Math.max(maxTarget, val);
-            }
+            minInput = Math.min(minInput, input.min());
+            maxInput = Math.max(maxInput, input.max());
+            minTarget = Math.min(minTarget, target.min());
+            maxTarget = Math.max(maxTarget, target.max());
         }
 
         const inputDiff = maxInput - minInput;
