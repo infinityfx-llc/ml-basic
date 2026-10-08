@@ -53,6 +53,39 @@ export default class Matrix {
         return this;
     }
 
+    row(r: number) {
+        if (r < 0 || r >= this.rows) throw new Error(`Row index ${r} out of bounds for matrix with ${this.rows} rows`);
+
+        const row = new Matrix(1, this.columns);
+        const start = r * this.columns;
+        row.entries.set(this.entries.subarray(start, start + this.columns));
+
+        return row;
+    }
+
+    setRow(r: number, matrix: Matrix) {
+        if (r < 0 || r >= this.rows) throw new Error(`Row index ${r} out of bounds for matrix with ${this.rows} rows`);
+
+        const start = r * this.columns;
+        const count = Math.min(this.columns, matrix.entries.length);
+        this.entries.set(matrix.entries.subarray(0, count), start);
+
+        return this;
+    }
+
+    addRow(r: number, matrix: Matrix) {
+        if (r < 0 || r >= this.rows) throw new Error(`Row index ${r} out of bounds for matrix with ${this.rows} rows`);
+
+        const start = r * this.columns;
+        const count = Math.min(this.columns, matrix.entries.length);
+
+        for (let j = 0; j < count; j++) {
+            this.entries[start + j] += matrix.entries[j];
+        }
+
+        return this;
+    }
+
     add(n: number): Matrix;
     add(matrix: Matrix): Matrix;
     add(valueOrMatrix: number | Matrix) {
@@ -157,6 +190,33 @@ export default class Matrix {
         }
 
         return sum;
+    }
+
+    length() {
+        return Math.sqrt(this.dot(this));
+    }
+
+    similarity(matrix: Matrix) {
+        const size = this.length() * matrix.length();
+
+        return size ? this.dot(matrix) / size : 0;
+    }
+
+    cosDist(matrix: Matrix) {
+        return 1 - this.similarity(matrix);
+    }
+
+    dist(matrix: Matrix) {
+        if (!this.isEqualShape(matrix)) throw new Error('Matrices must have an equal shape to compute euclidean distance');
+
+        let sum = 0;
+
+        for (let i = 0; i < this.entries.length; i++) {
+            const diff = this.entries[i] - matrix.entries[i];
+            sum += diff * diff;
+        }
+
+        return Math.sqrt(sum);
     }
 
     static mult(a: Matrix, b: Matrix) {

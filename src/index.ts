@@ -50,7 +50,7 @@ function deserialize(data: any): any {
                 return Object.assign(Optimizers[data.name](), data);
             case 'Layer':
                 // @ts-expect-error
-                const { Layer } = Layers[data.name]();
+                const { Layer } = Layers[data.name](); // pass parameters directly?
                 return Object.assign(Object.create(Layer.prototype), data);
 
         }

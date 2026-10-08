@@ -8,6 +8,7 @@ import MaxPoolingLayer from "./max-pooling";
 import NormalizationLayer, { NormalizationParams } from "./normalization";
 import { PoolingParams } from "./pooling";
 import RecurrentLayer from "./recurrent";
+import EmbeddingLayer, { EmbeddingParams } from "./embedding";
 
 type LayerParams<T extends { input: any; }> = Omit<T, 'input'> & Partial<Pick<T, 'input'>>;
 
@@ -42,6 +43,10 @@ const Layers = {
     }),
     norm: (args: LayerParams<NormalizationParams>) => ({
         Layer: NormalizationLayer,
+        args
+    }),
+    embd: (args: LayerParams<EmbeddingParams>) => ({
+        Layer: EmbeddingLayer,
         args
     })
 };
