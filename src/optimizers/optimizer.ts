@@ -2,6 +2,7 @@ import Matrix from "../lib/matrix";
 
 export type HyperParameters = {
     learningRate?: number;
+    learningRateDecay?: number;
     clipping?: number;
     batchSize?: number;
     beta1?: number;

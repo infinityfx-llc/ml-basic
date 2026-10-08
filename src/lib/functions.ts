@@ -150,6 +150,23 @@ export class SoftPlus extends Activator {
 
 }
 
+export class Gelu extends Activator {
+
+    name = 'Gelu';
+
+    activate(n: number) {
+        return 0.5 * n * (1 + Math.tanh(Math.sqrt(2 / Math.PI) * (n + 0.044715 * Math.pow(n, 3))));
+    }
+
+    deactivate(n: number) {
+        const c = Math.sqrt(2 / Math.PI);
+        const t = Math.pow(Math.tanh(c * (n + 0.044715 * Math.pow(n, 3))), 2);
+
+        return 0.5 * (1 + t) + 0.5 * n * (1 - t * t) * (c * (1 + 3 * 0.044715 * n * n));
+    }
+
+}
+
 export type Initializer = (row: number, cols: number) => Matrix;
 
 const xavier: Initializer = (rows, cols) => {

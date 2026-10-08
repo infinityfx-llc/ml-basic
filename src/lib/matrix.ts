@@ -109,6 +109,24 @@ export default class Matrix {
         return sum;
     }
 
+    mean() {
+        return this.entries.length === 0 ? 0 : this.sum() / this.entries.length;
+    }
+
+    var(mean = this.mean()) {
+        let s = 0;
+
+        for (let i = 0; i < this.entries.length; i++) {
+            s += Math.pow(this.entries[i] - mean, 2);
+        }
+
+        return s / this.entries.length;
+    }
+
+    std(mean?: number) {
+        return Math.sqrt(this.var(mean));
+    }
+
     static mult(a: Matrix, b: Matrix) {
         if (a.columns !== b.rows) throw new Error(`Matrix A's columns must be equal to Matrix B's rows`);
 

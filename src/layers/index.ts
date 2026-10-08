@@ -5,6 +5,7 @@ import FullyConnectedLayer, { FullyConnectedParams } from "./fully-connected";
 import { LoopParams } from "./loop";
 import LSTMLayer from "./lstm";
 import MaxPoolingLayer from "./max-pooling";
+import NormalizationLayer, { NormalizationParams } from "./normalization";
 import { PoolingParams } from "./pooling";
 import RecurrentLayer from "./recurrent";
 
@@ -37,6 +38,10 @@ const Layers = {
     }),
     drop: (args: LayerParams<DropoutParams>) => ({
         Layer: DropoutLayer,
+        args
+    }),
+    norm: (args: LayerParams<NormalizationParams>) => ({
+        Layer: NormalizationLayer,
         args
     })
 };

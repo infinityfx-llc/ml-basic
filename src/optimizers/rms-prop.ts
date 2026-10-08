@@ -9,6 +9,10 @@ export type RMSPropParams = {
     /**
      * @default 0
      */
+    learningRateDecay?: number;
+    /**
+     * @default 0
+     */
     clipping?: number;
     /**
      * @default 4
@@ -33,12 +37,13 @@ export default class RMSProp extends BatchGradientDescent {
 
     constructor({
         learningRate = 0.01,
+        learningRateDecay = 0,
         clipping = 0,
         batchSize = 4,
         beta1 = 0.9,
         epsilon = 1e-8
     }: RMSPropParams = {}) {
-        super({ learningRate, clipping, batchSize });
+        super({ learningRate, learningRateDecay, clipping, batchSize });
 
         this.beta1 = beta1;
         this.epsilon = epsilon;

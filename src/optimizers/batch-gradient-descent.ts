@@ -9,6 +9,10 @@ export type BatchGradientDescentParams = {
     /**
      * @default 0
      */
+    learningRateDecay?: number;
+    /**
+     * @default 0
+     */
     clipping?: number;
     /**
      * @default 8
@@ -25,10 +29,11 @@ export default class BatchGradientDescent extends GradientDescent {
 
     constructor({
         learningRate = 0.01,
+        learningRateDecay = 0,
         clipping = 0,
         batchSize = 8
     }: BatchGradientDescentParams = {}) {
-        super({ learningRate, clipping });
+        super({ learningRate, learningRateDecay, clipping });
 
         this.batchSize = batchSize;
     }
@@ -48,7 +53,7 @@ export default class BatchGradientDescent extends GradientDescent {
     }
 
     flush(force = false) {
-        this.i++;
+        super.flush();
 
         const remainder = this.i % this.batchSize;
         if (!force && remainder !== 0) return;
