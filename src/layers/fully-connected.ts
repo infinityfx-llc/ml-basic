@@ -35,17 +35,19 @@ export default class FullyConnectedLayer extends Layer {
     }
 
     propagate(input: Matrix) {
-        return Matrix.mult(this.weights, input.reshape(...this.input))
-            .add(this.bias)
-            .apply(this.activation.activate);
+        const output = Matrix.mult(this.weights, input.reshape(...this.input))
+            .add(this.bias);
+
+        return this.activation.activate(output);
     }
 
     backPropagate(input: Matrix, output: Matrix, loss: Matrix) {
-        output.apply(this.activation.deactivate).reshape(...this.output);
-        loss.reshape(...this.output);
         input.reshape(...this.input);
+        const gradient = this.activation.derivative(
+            output.reshape(...this.output),
+            loss.reshape(...this.output)
+        );
 
-        const gradient = output.scale(loss);
         loss = Matrix.transpose(this.weights).mult(gradient);
 
         this.optimizer.tune(this.weights, Matrix.mult(gradient, input.transpose()));

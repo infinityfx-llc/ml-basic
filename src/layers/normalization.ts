@@ -51,13 +51,15 @@ export default class NormalizationLayer extends Layer {
         const xHat = this.normalized ?? new Matrix(this.input[0], this.input[1]);
 
         this.optimizer.tune(this.beta, loss);
-        this.optimizer.tune(this.gamma, new Matrix(loss).scale(xHat));
-        this.optimizer.flush();
+        const dg = new Matrix(loss).scale(xHat);
 
         loss.scale(this.gamma);
-        xHat.scale(new Matrix(loss).scale(xHat).sum() / loss.entries.length);
+        xHat.scale(new Matrix(loss).scale(xHat).mean());
 
-        return loss.sub(loss.sum() / loss.entries.length)
+        this.optimizer.tune(this.gamma, dg);
+        this.optimizer.flush();
+
+        return loss.sub(loss.mean())
             .sub(xHat)
             .scale(1 / Math.sqrt(this.variance + this.epsilon));
     }

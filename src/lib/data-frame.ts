@@ -156,13 +156,13 @@ export default class DataFrame {
         return this;
     }
 
-    normalize({
-        mode = 'target',
+    normalize({ // support zscore as well
+        mode = 'input',
         min = 0,
         max = 1
     }: {
         /**
-         * @default 'target'
+         * @default 'input'
          */
         mode?: 'target' | 'input' | 'both';
         /**
@@ -209,7 +209,7 @@ export default class DataFrame {
             }
 
             if (mode !== 'input') {
-                input.apply(val => targetDiff === 0 ? min : aTarget * val + bTarget);
+                target.apply(val => targetDiff === 0 ? min : aTarget * val + bTarget);
             }
         }
 

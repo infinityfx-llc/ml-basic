@@ -50,17 +50,19 @@ export default class ConvolutionalLayer extends Layer {
     }
 
     propagate(input: Matrix) {
-        return Matrix.correlate(input.reshape(...this.input), this.kernel, this.stride, this.padding)
-            .add(this.bias)
-            .apply(this.activation.activate);
+        const output = Matrix.correlate(input.reshape(...this.input), this.kernel, this.stride, this.padding)
+            .add(this.bias);
+
+        return this.activation.activate(output);
     }
 
     backPropagate(input: Matrix, output: Matrix, loss: Matrix) {
-        output.apply(this.activation.deactivate).reshape(...this.output);
-        loss.reshape(...this.output);
         input.reshape(...this.input);
-
-        const gradient = output.scale(loss);
+        const gradient = this.activation.derivative(
+            output.reshape(...this.output),
+            loss.reshape(...this.output)
+        );
+        
         loss = new Matrix(gradient)
             .dialate(this.stride - 1)
             .correlate(new Matrix(this.kernel).flip(), 1, this.kernel.rows - 1 - this.padding);

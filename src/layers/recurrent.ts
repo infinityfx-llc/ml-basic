@@ -26,7 +26,7 @@ export default class RecurrentLayer extends LoopLayer<'state' | 'input' | 'outpu
 
         this.state = Matrix.mult(this.hWeights, this.state);
         this.state.add(Matrix.mult(this.iWeights, input));
-        this.state.add(this.bias).apply(this.activation.activate);
+        this.activation.activate(this.state.add(this.bias));
 
         if (output) {
             this.store('output', this.state);
@@ -38,8 +38,7 @@ export default class RecurrentLayer extends LoopLayer<'state' | 'input' | 'outpu
     }
 
     backward(loss: Matrix) {
-        const output = this.get('output').apply(this.activation.deactivate);
-        const gradient = output.scale(loss);
+        const gradient = this.activation.derivative(this.get('output'), loss);
 
         const dInputWeights = Matrix.mult(gradient, this.get('input').transpose());
         const dRecurrentWeights = Matrix.mult(gradient, this.get('state').transpose());

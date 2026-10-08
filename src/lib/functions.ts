@@ -19,7 +19,7 @@ export class SquaredLoss extends LossFunction {
     name = 'SquaredLoss';
 
     mean(output: Matrix, target: Matrix) {
-        return new Matrix(target).sub(output).apply(val => val * val).sum() / target.entries.length;
+        return new Matrix(target).sub(output).apply(val => val * val).mean();
     }
 
     derivative(output: Matrix, target: Matrix) {
@@ -38,7 +38,7 @@ export class CrossEntropyLoss extends LossFunction {
         return -new Matrix(output)
             .apply(val => Math.log(Math.min(Math.max(val, this.eps), 1 - this.eps)))
             .scale(target)
-            .sum() / target.entries.length;
+            .mean();
     }
 
     derivative(output: Matrix, target: Matrix) {
@@ -59,9 +59,11 @@ export abstract class Activator {
 
     abstract name: string;
 
-    abstract activate(n: number): number;
+    abstract activate(input: Matrix): Matrix;
 
-    abstract deactivate(n: number): number;
+    abstract deactivate(output: Matrix): Matrix;
+
+    abstract derivative(output: Matrix, loss: Matrix): Matrix;
 
     serialize() {
         return this.name;
@@ -73,12 +75,16 @@ export class Sigmoid extends Activator {
 
     name = 'Sigmoid';
 
-    activate(n: number) {
-        return 1 / (1 + Math.exp(-n));
+    activate(input: Matrix) {
+        return input.apply(n => 1 / (1 + Math.exp(-n)));
     }
 
-    deactivate(n: number) {
-        return n * (1 - n);
+    deactivate(output: Matrix) {
+        return output.apply(n => n * (1 - n));
+    }
+
+    derivative(output: Matrix, loss: Matrix) {
+        return this.deactivate(output).scale(loss);
     }
 
 }
@@ -87,12 +93,16 @@ export class TanH extends Activator {
 
     name = 'TanH';
 
-    activate(n: number) {
-        return Math.tanh(n);
+    activate(input: Matrix) {
+        return input.apply(Math.tanh);
     }
 
-    deactivate(n: number) {
-        return 1 - (n * n);
+    deactivate(output: Matrix) {
+        return output.apply(n => 1 - n * n);
+    }
+
+    derivative(output: Matrix, loss: Matrix) {
+        return this.deactivate(output).scale(loss);
     }
 
 }
@@ -108,12 +118,16 @@ export class Elu extends Activator {
         this.alpha = alpha;
     }
 
-    activate = (n: number) => {
-        return n > 0 ? n : this.alpha * (Math.exp(n) - 1);
+    activate(input: Matrix) {
+        return input.apply(n => n > 0 ? n : this.alpha * (Math.exp(n) - 1));
     }
 
-    deactivate = (n: number) => {
-        return n < 0 ? n + this.alpha : 1;
+    deactivate(output: Matrix) {
+        return output.apply(n => n < 0 ? n + this.alpha : 1);
+    }
+
+    derivative(output: Matrix, loss: Matrix) {
+        return this.deactivate(output).scale(loss);
     }
 
 }
@@ -126,12 +140,16 @@ export class Relu extends Elu {
         super(alpha);
     }
 
-    activate = (n: number) => {
-        return n < 0 ? this.alpha * n : n;
+    activate(input: Matrix) {
+        return input.apply(n => n < 0 ? this.alpha * n : n);
     }
 
-    deactivate = (n: number) => {
-        return n < 0 ? this.alpha : 1;
+    deactivate(output: Matrix) {
+        return output.apply(n => n < 0 ? this.alpha : 1);
+    }
+
+    derivative(output: Matrix, loss: Matrix) {
+        return this.deactivate(output).scale(loss);
     }
 
 }
@@ -140,12 +158,16 @@ export class SoftPlus extends Activator {
 
     name = 'SoftPlus';
 
-    activate(n: number) {
-        return Math.log(1 + Math.exp(n));
+    activate(input: Matrix) {
+        return input.apply(n => Math.log(1 + Math.exp(n)));
     }
 
-    deactivate(n: number) {
-        return 1 - Math.exp(-n);
+    deactivate(output: Matrix) {
+        return output.apply(n => 1 - Math.exp(-n));
+    }
+
+    derivative(output: Matrix, loss: Matrix) {
+        return this.deactivate(output).scale(loss);
     }
 
 }
@@ -154,15 +176,39 @@ export class Gelu extends Activator {
 
     name = 'Gelu';
 
-    activate(n: number) {
-        return 0.5 * n * (1 + Math.tanh(Math.sqrt(2 / Math.PI) * (n + 0.044715 * Math.pow(n, 3))));
+    activate(input: Matrix) {
+        return input.apply(n => 0.5 * n * (1 + Math.tanh(Math.sqrt(2 / Math.PI) * (n + 0.044715 * Math.pow(n, 3)))));
     }
 
-    deactivate(n: number) {
+    deactivate(output: Matrix) {
         const c = Math.sqrt(2 / Math.PI);
-        const t = Math.pow(Math.tanh(c * (n + 0.044715 * Math.pow(n, 3))), 2);
 
-        return 0.5 * (1 + t) + 0.5 * n * (1 - t * t) * (c * (1 + 3 * 0.044715 * n * n));
+        return output.apply(n => {
+            const t = Math.pow(Math.tanh(c * (n + 0.044715 * Math.pow(n, 3))), 2);
+            return 0.5 * (1 + t) + 0.5 * n * (1 - t * t) * (c * (1 + 3 * 0.044715 * n * n));
+        });
+    }
+
+    derivative(output: Matrix, loss: Matrix) {
+        return this.deactivate(output).scale(loss);
+    }
+
+}
+
+export class Softmax extends Activator {
+
+    name = 'Softmax';
+
+    activate(input: Matrix) {
+        return input.sub(input.max()).apply(Math.exp).scale(1 / (input.sum() || 1));
+    }
+
+    deactivate(output: Matrix) {
+        return output.apply(n => n * (1 - n));
+    }
+
+    derivative(output: Matrix, loss: Matrix) {
+        return new Matrix(loss).sub(loss.dot(output)).scale(output);
     }
 
 }

@@ -101,6 +101,26 @@ export default class Matrix {
         return this;
     }
 
+    min() {
+        let min = Infinity;
+
+        for (let i = 0; i < this.entries.length; i++) {
+            if (this.entries[i] < min) min = this.entries[i];
+        }
+
+        return min;
+    }
+
+    max() {
+        let max = -Infinity;
+
+        for (let i = 0; i < this.entries.length; i++) {
+            if (this.entries[i] > max) max = this.entries[i];
+        }
+
+        return max;
+    }
+
     sum() {
         let sum = 0;
 
@@ -125,6 +145,18 @@ export default class Matrix {
 
     std(mean?: number) {
         return Math.sqrt(this.var(mean));
+    }
+
+    dot(matrix: Matrix) {
+        if (!this.isEqualShape(matrix)) throw new Error('Matrices must have an equal shape to compute dot product');
+
+        let sum = 0;
+
+        for (let i = 0; i < this.entries.length; i++) {
+            sum += this.entries[i] * matrix.entries[i];
+        }
+
+        return sum;
     }
 
     static mult(a: Matrix, b: Matrix) {
