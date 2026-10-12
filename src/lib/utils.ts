@@ -3,6 +3,8 @@ import { readFile as fsReadFile, writeFileSync } from 'fs';
 
 export const browser = () => typeof window !== 'undefined' && typeof document !== 'undefined';
 
+export const discrete = (value: number, min: number, max: number) => Math.min(Math.max(Math.round(value), min), max);
+
 export function range(max: number): number[];
 export function range(min: number, max: number): number[];
 export function range(minOrMax: number, max?: number) {

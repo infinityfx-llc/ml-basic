@@ -1,3 +1,4 @@
+import { Discretizer, Labeler, Tokenizer } from "./discretizer";
 import Matrix from "./matrix";
 import { parseCSV, readFile, saveJsonFile } from "./utils";
 
@@ -22,8 +23,11 @@ export default class DataFrame {
     data: {
         input: Matrix;
         target: Matrix;
-    }[];
-    labels = new Map<string, number>();
+    }[] = [];
+    discretizers = {
+        input: new Labeler(),
+        target: new Labeler()
+    };
     size: {
         input: number;
         target: number;
@@ -32,61 +36,70 @@ export default class DataFrame {
             target: 0
         };
 
-    constructor(raw: InputData);
-    constructor(input: InputData, target: TargetData);
-    constructor(rawOrInput: InputData, target?: TargetData) {
+    use(key: 'input' | 'target', discretizer: Discretizer) {
+        this.discretizers[key] = discretizer;
+    }
+
+    async load(file: string | Blob) {
+        const [_, ext] = (typeof file === 'string' ?
+            file.match(/.*\.(csv|json)$/i) :
+            file.type.match(/\/(csv|json)$/i)) || [];
+        if (!ext) throw new Error('DataFrame only supports loading .csv or .json files');
+
+        const data = await readFile(file);
+
+        if (ext.toLowerCase() === 'json') {
+            return this.ingest(JSON.parse(data));
+        } else {
+            return this.ingest(parseCSV(data));
+        }
+    }
+
+    ingest(raw: InputData): this;
+    ingest(input: InputData, target: TargetData): this;
+    ingest(rawOrInput: InputData, target?: TargetData) {
         if (target && rawOrInput.length !== target.length) throw new Error('Input size does not match target size');
 
         this.data = rawOrInput.map((entry, i) => {
-            let input = this.isValue(entry) ? this.toValue(entry) : this.getKey(entry, inputKeys),
-                output: Matrix;
-
-            if (target) {
-                output = this.isValue(target[i]) ? this.toValue(target[i]) : this.getKey(target[i], targetKeys);
-            } else if (!this.isValue(entry)) {
-                output = this.getKey(entry, targetKeys);
-            }
+            let input = this.toValue(this.getEntry(entry, inputKeys), this.discretizers.input),
+                output = this.toValue(this.getEntry(target ? target[i] : entry, targetKeys), this.discretizers.target);
 
             this.size.input = input.entries.length;
-            this.size.target = output!.entries.length;
+            this.size.target = output.entries.length;
 
             return {
                 input,
-                target: output!
+                target: output
             };
         });
+
+        return this;
     }
 
     private isValue(value: TargetValue | DataEntry) {
         return typeof value !== 'object' || Array.isArray(value) || value === null;
     }
 
-    private toValue(value: TargetValue) {
+    private toValue(value: TargetValue, discretizer: Discretizer) {
         value = typeof value === 'number' ? [value] : value;
 
         if (!value) return new Matrix(0, 0);
 
         if (typeof value === 'string') {
-            let index = this.labels.get(value);
-
-            if (index === undefined) {
-                index = this.labels.size;
-                this.labels.set(value, index);
-            }
-
-            value = new Array(index).fill(0); // auto padding without .clean() call?
-            value[index] = 1;
+            return discretizer.get(value);
         }
 
         return new Matrix(value.length, 1, value);
     }
 
-    private getKey(entry: DataEntry, keys: readonly (InputKeys | TargetKeys)[]) {
+    private getEntry(entry: TargetValue | DataEntry, keys: readonly (InputKeys | TargetKeys)[]) {
+        if (this.isValue(entry)) return entry;
+
         for (const key of keys) {
-            if (key in entry) return this.toValue(entry[key]);
+            if (key in entry) return entry[key];
         }
 
-        return new Matrix(0, 0);
+        return null;
     }
 
     private getLength(lengths: Map<number, number>, maximum: boolean) {
@@ -96,7 +109,7 @@ export default class DataFrame {
     }
 
     getLabels() {
-        return Array.from(this.labels.keys());
+        return Array.from(this.discretizers.target.keymap.keys());
     }
 
     clean({
@@ -209,35 +222,20 @@ export default class DataFrame {
 
     split(divide = .5) {
         const index = Math.floor(this.data.length * divide),
-            training = new DataFrame([]),
-            validation = new DataFrame([]);
+            training = new DataFrame(),
+            validation = new DataFrame();
 
         training.data = this.data.slice(0, index);
-        training.labels = this.labels;
         training.size = this.size;
+        training.discretizers = this.discretizers;
         validation.data = this.data.slice(index);
-        validation.labels = this.labels;
         validation.size = this.size;
+        validation.discretizers = this.discretizers;
 
         return [
             training,
             validation
         ];
-    }
-
-    static async from(file: string | Blob) {
-        const [_, ext] = (typeof file === 'string' ?
-            file.match(/.*\.(csv|json)$/i) :
-            file.type.match(/\/(csv|json)$/i)) || [];
-        if (!ext) throw new Error('DataFrame only supports loading .csv or .json files');
-
-        const data = await readFile(file);
-
-        if (ext.toLowerCase() === 'json') {
-            return new DataFrame(JSON.parse(data));
-        } else {
-            return new DataFrame(parseCSV(data));
-        }
     }
 
     save(file: string) {

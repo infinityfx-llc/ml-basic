@@ -8,6 +8,7 @@ import Matrix from "./lib/matrix";
 import Network from "./lib/network";
 
 export * from './lib/functions';
+export * from './lib/discretizer';
 
 export {
     Neural,
