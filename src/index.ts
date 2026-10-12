@@ -6,6 +6,7 @@ import Optimizers from "./optimizers";
 import DataFrame from "./lib/data-frame";
 import Matrix from "./lib/matrix";
 import Network from "./lib/network";
+import Metrics from "./lib/metrics";
 
 export * from './lib/functions';
 export * from './lib/discretizer';
@@ -15,7 +16,8 @@ export {
     Layers,
     Optimizers,
     DataFrame,
-    Matrix
+    Matrix,
+    Metrics
 }
 
 function deserialize(data: any): any {

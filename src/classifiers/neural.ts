@@ -2,6 +2,7 @@ import { Layers } from "../layers";
 import DataFrame from "../lib/data-frame";
 import { LossFunction, SquaredLoss } from "../lib/functions";
 import Matrix from "../lib/matrix";
+import { Metric, Metrics } from "../lib/metrics";
 import Network from "../lib/network";
 import { range, shuffle } from "../lib/utils";
 import BatchGradientDescent from "../optimizers/batch-gradient-descent";
@@ -133,29 +134,34 @@ export default class Neural<O extends Optimizer> extends Classifier {
     }
 
     validate({
-        data
+        data,
+        metrics = []
     }: {
         data: DataFrame;
+        metrics?: Metric[];
     }) {
-        const order = shuffle(range(data.data.length)),
-            errors = {
-                min: Infinity,
-                avg: 0,
-                max: 0
-            };
+        const predictions: Matrix[] = [];
+        const targets: Matrix[] = [];
+        let totalLoss = 0;
 
-        for (let j = 0; j < order.length; j++) {
-            const { input, target } = data.data[order[j]];
+        for (let i = 0; i < data.data.length; i++) {
+            const { input, target } = data.data[i];
+            const output = this.propagate(input);
 
-            const output = this.propagate(input),
-                error = this.network.lossFunction.mean(output, target);
-                
-            errors.avg += error / order.length;
-            errors.min = Math.min(errors.min, error);
-            errors.max = Math.max(errors.max, error);
+            totalLoss += this.network.lossFunction.mean(output, target);
+            predictions.push(output);
+            targets.push(target);
         }
 
-        return errors;
+        const results: Record<string, any> = {
+            loss: data.data.length ? totalLoss / data.data.length : 0
+        };
+
+        for (const metric of metrics) {
+            results[metric.name] = metric.compute(predictions, targets);
+        }
+
+        return results;
     }
 
 }

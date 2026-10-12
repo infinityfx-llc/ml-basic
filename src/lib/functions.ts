@@ -71,6 +71,24 @@ export abstract class Activator {
 
 }
 
+export class Linear extends Activator {
+
+    name = 'Linear';
+
+    activate(input: Matrix) {
+        return input;
+    }
+
+    deactivate(output: Matrix) {
+        return new Matrix(output.rows, output.columns).set(1);
+    }
+
+    derivative(_: Matrix, loss: Matrix) {
+        return loss;
+    }
+
+}
+
 export class Sigmoid extends Activator {
 
     name = 'Sigmoid';
