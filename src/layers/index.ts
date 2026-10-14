@@ -9,6 +9,7 @@ import NormalizationLayer, { NormalizationParams } from "./normalization";
 import { PoolingParams } from "./pooling";
 import RecurrentLayer from "./recurrent";
 import EmbeddingLayer, { EmbeddingParams } from "./embedding";
+import SelfAttentionLayer, { SelfAttentionParams } from "./self-attention";
 
 type LayerParams<T extends { input: any; }> = Omit<T, 'input'> & Partial<Pick<T, 'input'>>;
 
@@ -47,6 +48,10 @@ const Layers = {
     }),
     embd: (args: LayerParams<EmbeddingParams>) => ({
         Layer: EmbeddingLayer,
+        args
+    }),
+    attn: (args: LayerParams<SelfAttentionParams>) => ({
+        Layer: SelfAttentionLayer,
         args
     })
 };

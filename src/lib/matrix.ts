@@ -243,6 +243,54 @@ export default class Matrix {
         return c;
     }
 
+    static multTransA(a: Matrix, b: Matrix) {
+        if (a.rows !== b.rows) throw new Error(`Matrix A's rows (${a.rows}) must be equal to Matrix B's rows (${b.rows})`);
+
+        const c = new Matrix(a.columns, b.columns);
+
+        for (let k = 0; k < a.rows; k++) {
+            const ra = k * a.columns;
+            const rb = k * b.columns;
+
+            for (let i = 0; i < a.columns; i++) {
+                const aVal = a.entries[ra + i];
+                if (aVal === 0) continue;
+
+                const rc = i * b.columns;
+
+                for (let j = 0; j < b.columns; j++) {
+                    c.entries[rc + j] += aVal * b.entries[rb + j];
+                }
+            }
+        }
+
+        return c;
+    }
+
+    static multTransB(a: Matrix, b: Matrix) {
+        if (a.columns !== b.columns) throw new Error(`Matrix A's columns (${a.columns}) must be equal to Matrix B's columns (${b.columns})`);
+
+        const c = new Matrix(a.rows, b.rows);
+
+        for (let i = 0; i < a.rows; i++) {
+            const ra = i * a.columns;
+            const rc = i * b.rows;
+
+            for (let j = 0; j < b.rows; j++) {
+                const rb = j * b.columns;
+                let sum = 0;
+
+                for (let k = 0; k < a.columns; k++) {
+                    sum += a.entries[ra + k] * b.entries[rb + k];
+                }
+
+                c.entries[rc + j] = sum;
+            }
+        }
+
+        return c;
+    }
+
     mult(matrix: Matrix) {
         matrix = Matrix.mult(this, matrix);
 

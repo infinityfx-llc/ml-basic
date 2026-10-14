@@ -12,6 +12,10 @@ export abstract class Discretizer {
         this.vocab = vocabulary;
     }
 
+    getVocabulary() {
+        return Math.max(this.vocab, this.keymap.size);
+    }
+
 }
 
 export class Labeler extends Discretizer {

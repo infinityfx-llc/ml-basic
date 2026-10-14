@@ -33,17 +33,16 @@ export default class EmbeddingLayer extends Layer {
     }
 
     propagate(input: Matrix) {
-        input.reshape(...this.input);
+        const count = input.entries.length;
+        const output = new Matrix(count, this.output[1]);
 
-        const output = new Matrix(this.input[0], this.output[1]);
-
-        for (let i = 0; i < this.input[0]; i++) {
+        for (let i = 0; i < count; i++) {
             const token = discrete(input.entries[i], 0, this.vocab - 1);
 
             output.setRow(i, this.weights.row(token));
         }
 
-        return output.reshape(...this.output);
+        return count === this.input[0] ? output.reshape(...this.output) : output;
     }
 
     backPropagate(input: Matrix, _: Matrix, loss: Matrix) {

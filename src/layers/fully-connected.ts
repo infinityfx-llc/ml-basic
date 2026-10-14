@@ -1,4 +1,4 @@
-import { Activator, Initialization, Initializer, Sigmoid } from "../lib/functions";
+import { Activator, Initialization, Sigmoid } from "../lib/functions";
 import Matrix from "../lib/matrix";
 import Layer from "./layer";
 
@@ -48,9 +48,9 @@ export default class FullyConnectedLayer extends Layer {
             loss.reshape(...this.output)
         );
 
-        loss = Matrix.transpose(this.weights).mult(gradient);
+        loss = Matrix.multTransA(this.weights, gradient);
 
-        this.optimizer.tune(this.weights, Matrix.mult(gradient, input.transpose()));
+        this.optimizer.tune(this.weights, Matrix.multTransB(gradient, input));
         this.optimizer.tune(this.bias, gradient);
         this.optimizer.flush();
 
