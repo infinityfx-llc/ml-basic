@@ -9,7 +9,7 @@ import BatchGradientDescent from "../optimizers/batch-gradient-descent";
 import Optimizer from "../optimizers/optimizer";
 import Classifier from "./classifier";
 
-export default class Neural<O extends Optimizer> extends Classifier {
+export default class Neural<O extends Optimizer = BatchGradientDescent> extends Classifier {
 
     name = 'Neural';
     epochs = 0;

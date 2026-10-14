@@ -1,6 +1,7 @@
 import { readFile } from "./lib/utils";
 import * as Functions from "./lib/functions";
 import Neural from "./classifiers/neural";
+import Autoencoder from "./classifiers/autoencoder";
 import Layers from "./layers";
 import Optimizers from "./optimizers";
 import DataFrame from "./lib/data-frame";
@@ -10,9 +11,11 @@ import Metrics from "./lib/metrics";
 
 export * from './lib/functions';
 export * from './lib/discretizer';
+export * from './lib/metrics';
 
 export {
     Neural,
+    Autoencoder,
     Layers,
     Optimizers,
     DataFrame,
@@ -62,13 +65,15 @@ function deserialize(data: any): any {
     return data;
 }
 
-export async function load(file: string | Blob): Promise<Neural<any>> {
+export async function load(file: string | Blob): Promise<Neural<any> | Autoencoder<any>> {
     const data = await readFile(file).then(JSON.parse);
 
     switch (data.name) {
         case 'Neural':
             return Object.assign(Object.create(Neural.prototype), deserialize(data));
+        case 'Autoencoder':
+            return Object.assign(Object.create(Autoencoder.prototype), deserialize(data));
         default:
-            throw new Error('Unable to load classifier');
+            throw new Error(`Unable to load classifier of type: ${data.name}`);
     }
 }
