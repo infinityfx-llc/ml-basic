@@ -2,7 +2,7 @@ import { Layers } from "../layers";
 import DataFrame from "../lib/data-frame";
 import { LossFunction, SquaredLoss } from "../lib/functions";
 import Matrix from "../lib/matrix";
-import { Metric, Metrics } from "../lib/metrics";
+import { Metric } from "../lib/metrics";
 import Network from "../lib/network";
 import { range, shuffle } from "../lib/utils";
 import BatchGradientDescent from "../optimizers/batch-gradient-descent";
@@ -162,6 +162,42 @@ export default class Neural<O extends Optimizer = BatchGradientDescent> extends 
         }
 
         return results;
+    }
+
+    embed(input: number | number[] | Matrix): Matrix {
+        const matrix = typeof input === 'number' ? new Matrix(1, 1, [input]) :
+            Array.isArray(input) ? new Matrix(input.length, 1, input) : input;
+
+        return this.network.layers[0].propagate(matrix);
+    }
+
+    clone() {
+        const clone: Neural<O> = Object.create(Object.getPrototypeOf(this));
+
+        clone.optimizer = this.optimizer.clone();
+        clone.network = Object.create(Network.prototype);
+        clone.network.lossFunction = Object.create(this.network.lossFunction);
+        clone.network.layers = this.network.layers.map(layer => layer.clone());
+
+        return clone;
+    }
+
+    cross(partner: Neural<O>) {
+        const child = this.clone();
+
+        for (let i = 0; i < child.network.layers.length; i++) {
+            child.network.layers[i].cross(partner.network.layers[i]);
+        }
+
+        return child;
+    }
+
+    mutate(rate: number, scale: number) {
+        this.network.layers.forEach(layer => {
+            layer.mutate(rate, scale);
+        });
+
+        return this;
     }
 
 }

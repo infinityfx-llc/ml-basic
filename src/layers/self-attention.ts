@@ -18,7 +18,7 @@ export default class SelfAttentionLayer extends Layer {
     causal: boolean;
     scale: number;
 
-    wq: Matrix;
+    wq: Matrix; // rename
     wk: Matrix;
     wv: Matrix;
 

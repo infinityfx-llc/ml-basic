@@ -2,6 +2,7 @@ import { readFile } from "./lib/utils";
 import * as Functions from "./lib/functions";
 import Neural from "./classifiers/neural";
 import Autoencoder from "./classifiers/autoencoder";
+import Genetic from "./classifiers/genetic";
 import Layers from "./layers";
 import Optimizers from "./optimizers";
 import DataFrame from "./lib/data-frame";
@@ -16,6 +17,7 @@ export * from './lib/metrics';
 export {
     Neural,
     Autoencoder,
+    Genetic,
     Layers,
     Optimizers,
     DataFrame,
@@ -23,6 +25,7 @@ export {
     Metrics
 }
 
+// will need changes to work with Genetic
 function deserialize(data: any): any {
     if (typeof data === 'object') {
         if (Array.isArray(data)) return data.map(deserialize);
